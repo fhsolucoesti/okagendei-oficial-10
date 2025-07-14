@@ -273,6 +273,39 @@ export interface SignupSettings {
   billingInfoTitle: string;
   billingInfoDescription: string;
   submitButtonText: string;
+  formFields: {
+    companyName: {
+      label: string;
+      placeholder: string;
+      required: boolean;
+      visible: boolean;
+    };
+    ownerName: {
+      label: string;
+      placeholder: string;
+      required: boolean;
+      visible: boolean;
+    };
+    email: {
+      label: string;
+      placeholder: string;
+      required: boolean;
+      visible: boolean;
+    };
+    phone: {
+      label: string;
+      placeholder: string;
+      required: boolean;
+      visible: boolean;
+    };
+    password: {
+      label: string;
+      placeholder: string;
+      required: boolean;
+      visible: boolean;
+      helpText: string;
+    };
+  };
   termsOfUse: {
     enabled: boolean;
     title: string;

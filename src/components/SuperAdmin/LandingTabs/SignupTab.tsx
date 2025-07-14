@@ -195,6 +195,331 @@ const SignupTab = ({ signupSettings, setSignupSettings }: SignupTabProps) => {
         </CardContent>
       </Card>
 
+      {/* Configurações dos Campos do Formulário */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Campos do Formulário</CardTitle>
+          <CardDescription>
+            Configure os campos que aparecerão no formulário de cadastro
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Campo Nome da Empresa */}
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium">Campo: Nome da Empresa</h4>
+              <Switch
+                checked={signupSettings.formFields.companyName.visible}
+                onCheckedChange={(checked) => updateSettings({
+                  formFields: {
+                    ...signupSettings.formFields,
+                    companyName: { ...signupSettings.formFields.companyName, visible: checked }
+                  }
+                })}
+              />
+            </div>
+            {signupSettings.formFields.companyName.visible && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="company-label">Label do Campo</Label>
+                  <Input
+                    id="company-label"
+                    value={signupSettings.formFields.companyName.label}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        companyName: { ...signupSettings.formFields.companyName, label: e.target.value }
+                      }
+                    })}
+                    placeholder="Nome da Empresa"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="company-placeholder">Placeholder</Label>
+                  <Input
+                    id="company-placeholder"
+                    value={signupSettings.formFields.companyName.placeholder}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        companyName: { ...signupSettings.formFields.companyName, placeholder: e.target.value }
+                      }
+                    })}
+                    placeholder="Salão Beleza"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={signupSettings.formFields.companyName.required}
+                    onCheckedChange={(checked) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        companyName: { ...signupSettings.formFields.companyName, required: checked }
+                      }
+                    })}
+                  />
+                  <Label>Campo obrigatório</Label>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Campo Nome do Responsável */}
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium">Campo: Nome do Responsável</h4>
+              <Switch
+                checked={signupSettings.formFields.ownerName.visible}
+                onCheckedChange={(checked) => updateSettings({
+                  formFields: {
+                    ...signupSettings.formFields,
+                    ownerName: { ...signupSettings.formFields.ownerName, visible: checked }
+                  }
+                })}
+              />
+            </div>
+            {signupSettings.formFields.ownerName.visible && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="owner-label">Label do Campo</Label>
+                  <Input
+                    id="owner-label"
+                    value={signupSettings.formFields.ownerName.label}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        ownerName: { ...signupSettings.formFields.ownerName, label: e.target.value }
+                      }
+                    })}
+                    placeholder="Nome do Responsável"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="owner-placeholder">Placeholder</Label>
+                  <Input
+                    id="owner-placeholder"
+                    value={signupSettings.formFields.ownerName.placeholder}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        ownerName: { ...signupSettings.formFields.ownerName, placeholder: e.target.value }
+                      }
+                    })}
+                    placeholder="Maria Silva"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={signupSettings.formFields.ownerName.required}
+                    onCheckedChange={(checked) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        ownerName: { ...signupSettings.formFields.ownerName, required: checked }
+                      }
+                    })}
+                  />
+                  <Label>Campo obrigatório</Label>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Campo E-mail */}
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium">Campo: E-mail</h4>
+              <Switch
+                checked={signupSettings.formFields.email.visible}
+                onCheckedChange={(checked) => updateSettings({
+                  formFields: {
+                    ...signupSettings.formFields,
+                    email: { ...signupSettings.formFields.email, visible: checked }
+                  }
+                })}
+              />
+            </div>
+            {signupSettings.formFields.email.visible && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="email-label">Label do Campo</Label>
+                  <Input
+                    id="email-label"
+                    value={signupSettings.formFields.email.label}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        email: { ...signupSettings.formFields.email, label: e.target.value }
+                      }
+                    })}
+                    placeholder="E-mail"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email-placeholder">Placeholder</Label>
+                  <Input
+                    id="email-placeholder"
+                    value={signupSettings.formFields.email.placeholder}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        email: { ...signupSettings.formFields.email, placeholder: e.target.value }
+                      }
+                    })}
+                    placeholder="contato@salaobeleza.com"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={signupSettings.formFields.email.required}
+                    onCheckedChange={(checked) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        email: { ...signupSettings.formFields.email, required: checked }
+                      }
+                    })}
+                  />
+                  <Label>Campo obrigatório</Label>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Campo Telefone */}
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium">Campo: Telefone</h4>
+              <Switch
+                checked={signupSettings.formFields.phone.visible}
+                onCheckedChange={(checked) => updateSettings({
+                  formFields: {
+                    ...signupSettings.formFields,
+                    phone: { ...signupSettings.formFields.phone, visible: checked }
+                  }
+                })}
+              />
+            </div>
+            {signupSettings.formFields.phone.visible && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="phone-label">Label do Campo</Label>
+                  <Input
+                    id="phone-label"
+                    value={signupSettings.formFields.phone.label}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        phone: { ...signupSettings.formFields.phone, label: e.target.value }
+                      }
+                    })}
+                    placeholder="Telefone"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone-placeholder">Placeholder</Label>
+                  <Input
+                    id="phone-placeholder"
+                    value={signupSettings.formFields.phone.placeholder}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        phone: { ...signupSettings.formFields.phone, placeholder: e.target.value }
+                      }
+                    })}
+                    placeholder="(11) 99999-9999"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={signupSettings.formFields.phone.required}
+                    onCheckedChange={(checked) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        phone: { ...signupSettings.formFields.phone, required: checked }
+                      }
+                    })}
+                  />
+                  <Label>Campo obrigatório</Label>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Campo Senha */}
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium">Campo: Senha</h4>
+              <Switch
+                checked={signupSettings.formFields.password.visible}
+                onCheckedChange={(checked) => updateSettings({
+                  formFields: {
+                    ...signupSettings.formFields,
+                    password: { ...signupSettings.formFields.password, visible: checked }
+                  }
+                })}
+              />
+            </div>
+            {signupSettings.formFields.password.visible && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="password-label">Label do Campo</Label>
+                  <Input
+                    id="password-label"
+                    value={signupSettings.formFields.password.label}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        password: { ...signupSettings.formFields.password, label: e.target.value }
+                      }
+                    })}
+                    placeholder="Criar Senha"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password-placeholder">Placeholder</Label>
+                  <Input
+                    id="password-placeholder"
+                    value={signupSettings.formFields.password.placeholder}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        password: { ...signupSettings.formFields.password, placeholder: e.target.value }
+                      }
+                    })}
+                    placeholder="Digite sua senha"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password-help">Texto de Ajuda</Label>
+                  <Input
+                    id="password-help"
+                    value={signupSettings.formFields.password.helpText}
+                    onChange={(e) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        password: { ...signupSettings.formFields.password, helpText: e.target.value }
+                      }
+                    })}
+                    placeholder="Mínimo de 6 caracteres"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={signupSettings.formFields.password.required}
+                    onCheckedChange={(checked) => updateSettings({
+                      formFields: {
+                        ...signupSettings.formFields,
+                        password: { ...signupSettings.formFields.password, required: checked }
+                      }
+                    })}
+                  />
+                  <Label>Campo obrigatório</Label>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Termos de Uso */}
       <Card>
         <CardHeader>

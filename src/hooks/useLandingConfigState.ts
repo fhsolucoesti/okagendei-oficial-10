@@ -219,6 +219,39 @@ export const useLandingConfigState = () => {
     billingInfoTitle: 'Informação sobre Cobrança',
     billingInfoDescription: 'Não será cobrado nada durante o período de teste. Após 7 dias, caso continue, será cobrado via Mercado Pago.',
     submitButtonText: 'Começar Teste Grátis de 7 Dias',
+    formFields: {
+      companyName: {
+        label: 'Nome da Empresa',
+        placeholder: 'Salão Beleza',
+        required: true,
+        visible: true
+      },
+      ownerName: {
+        label: 'Nome do Responsável',
+        placeholder: 'Maria Silva',
+        required: true,
+        visible: true
+      },
+      email: {
+        label: 'E-mail',
+        placeholder: 'contato@salaobeleza.com',
+        required: true,
+        visible: true
+      },
+      phone: {
+        label: 'Telefone',
+        placeholder: '(11) 99999-9999',
+        required: true,
+        visible: true
+      },
+      password: {
+        label: 'Criar Senha',
+        placeholder: 'Digite sua senha',
+        required: true,
+        visible: true,
+        helpText: 'Mínimo de 6 caracteres'
+      }
+    },
     termsOfUse: {
       enabled: false,
       title: 'Termos de Uso',

@@ -94,76 +94,101 @@ const SignupDialog = ({
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="company-name">Nome da Empresa *</Label>
-                <Input
-                  id="company-name"
-                  value={signupForm.companyName}
-                  onChange={(e) => setSignupForm({ ...signupForm, companyName: e.target.value })}
-                  placeholder="Salão Beleza"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="owner-name">Nome do Responsável *</Label>
-                <Input
-                  id="owner-name"
-                  value={signupForm.ownerName}
-                  onChange={(e) => setSignupForm({ ...signupForm, ownerName: e.target.value })}
-                  placeholder="Maria Silva"
-                  required
-                />
-              </div>
+              {signupSettings.formFields.companyName.visible && (
+                <div>
+                  <Label htmlFor="company-name">
+                    {signupSettings.formFields.companyName.label}
+                    {signupSettings.formFields.companyName.required && ' *'}
+                  </Label>
+                  <Input
+                    id="company-name"
+                    value={signupForm.companyName}
+                    onChange={(e) => setSignupForm({ ...signupForm, companyName: e.target.value })}
+                    placeholder={signupSettings.formFields.companyName.placeholder}
+                    required={signupSettings.formFields.companyName.required}
+                  />
+                </div>
+              )}
+              {signupSettings.formFields.ownerName.visible && (
+                <div>
+                  <Label htmlFor="owner-name">
+                    {signupSettings.formFields.ownerName.label}
+                    {signupSettings.formFields.ownerName.required && ' *'}
+                  </Label>
+                  <Input
+                    id="owner-name"
+                    value={signupForm.ownerName}
+                    onChange={(e) => setSignupForm({ ...signupForm, ownerName: e.target.value })}
+                    placeholder={signupSettings.formFields.ownerName.placeholder}
+                    required={signupSettings.formFields.ownerName.required}
+                  />
+                </div>
+              )}
             </div>
             
-            <div>
-              <Label htmlFor="signup-email">E-mail *</Label>
-              <Input
-                id="signup-email"
-                type="email"
-                value={signupForm.email}
-                onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                placeholder="contato@salaobeleza.com"
-                required
-              />
-            </div>
+            {signupSettings.formFields.email.visible && (
+              <div>
+                <Label htmlFor="signup-email">
+                  {signupSettings.formFields.email.label}
+                  {signupSettings.formFields.email.required && ' *'}
+                </Label>
+                <Input
+                  id="signup-email"
+                  type="email"
+                  value={signupForm.email}
+                  onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                  placeholder={signupSettings.formFields.email.placeholder}
+                  required={signupSettings.formFields.email.required}
+                />
+              </div>
+            )}
             
-            <div>
-              <Label htmlFor="signup-phone">Telefone *</Label>
-              <Input
-                id="signup-phone"
-                value={signupForm.phone}
-                onChange={(e) => setSignupForm({ ...signupForm, phone: e.target.value })}
-                placeholder="(11) 99999-9999"
-                required
-              />
-            </div>
+            {signupSettings.formFields.phone.visible && (
+              <div>
+                <Label htmlFor="signup-phone">
+                  {signupSettings.formFields.phone.label}
+                  {signupSettings.formFields.phone.required && ' *'}
+                </Label>
+                <Input
+                  id="signup-phone"
+                  value={signupForm.phone}
+                  onChange={(e) => setSignupForm({ ...signupForm, phone: e.target.value })}
+                  placeholder={signupSettings.formFields.phone.placeholder}
+                  required={signupSettings.formFields.phone.required}
+                />
+              </div>
+            )}
 
-            <div>
-              <Label htmlFor="signup-password">Criar Senha *</Label>
-              <div className="relative">
-                <Input
-                  id="signup-password"
-                  type={showPassword ? "text" : "password"}
-                  value={signupForm.password}
-                  onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                  placeholder="Digite sua senha"
-                  required
-                  minLength={6}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+            {signupSettings.formFields.password.visible && (
+              <div>
+                <Label htmlFor="signup-password">
+                  {signupSettings.formFields.password.label}
+                  {signupSettings.formFields.password.required && ' *'}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="signup-password"
+                    type={showPassword ? "text" : "password"}
+                    value={signupForm.password}
+                    onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                    placeholder={signupSettings.formFields.password.placeholder}
+                    required={signupSettings.formFields.password.required}
+                    minLength={6}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {signupSettings.formFields.password.helpText}
+                </p>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Mínimo de 6 caracteres
-              </p>
-            </div>
+            )}
 
             {/* Termos de Uso */}
             {signupSettings.termsOfUse.enabled && (
