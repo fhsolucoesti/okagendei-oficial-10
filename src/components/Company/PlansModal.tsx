@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Crown, TrendingUp } from 'lucide-react';
+import { Check, Crown, TrendingUp, QrCode } from 'lucide-react';
 import { Plan } from '@/types';
 import { toast } from 'sonner';
+import MercadoPagoPix from './MercadoPagoPix';
 
 interface PlansModalProps {
   open: boolean;
@@ -26,6 +27,8 @@ const PlansModal = ({
 }: PlansModalProps) => {
   const [selectedPlan, setSelectedPlan] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPixModal, setShowPixModal] = useState(false);
+  const [selectedPlanForPix, setSelectedPlanForPix] = useState<Plan | null>(null);
 
   const handlePlanSelection = async (planId: string, planName: string) => {
     if (planName === currentPlanName && !isUpgrade) {
@@ -42,6 +45,21 @@ const PlansModal = ({
       onOpenChange(false);
       setSelectedPlan('');
     }, 1500);
+  };
+
+  const handlePixPayment = (plan: Plan) => {
+    setSelectedPlanForPix(plan);
+    setShowPixModal(true);
+  };
+
+  const handlePixSuccess = (paymentId: string) => {
+    if (selectedPlanForPix) {
+      toast.success('Pagamento aprovado! Plano ativado com sucesso.');
+      onPlanSelect(selectedPlanForPix.id, selectedPlanForPix.name);
+      setShowPixModal(false);
+      setSelectedPlanForPix(null);
+      onOpenChange(false);
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -127,27 +145,73 @@ const PlansModal = ({
                   ))}
                 </div>
 
-                <Button
-                  className="w-full mt-6"
-                  variant={plan.name === currentPlanName ? "outline" : "default"}
-                  disabled={isProcessing || (plan.name === currentPlanName && !isUpgrade)}
-                  onClick={() => handlePlanSelection(plan.id, plan.name)}
-                >
-                  {isProcessing && selectedPlan === plan.id ? (
-                    'Processando...'
-                  ) : plan.name === currentPlanName ? (
-                    isUpgrade ? 'Manter Plano Atual' : 'Plano Atual'
-                  ) : isUpgrade ? (
-                    'Fazer Upgrade'
+                <div className="space-y-3 mt-6">
+                  {plan.name === currentPlanName && !isUpgrade ? (
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      disabled
+                    >
+                      Plano Atual
+                    </Button>
+                  ) : plan.monthlyPrice === 0 ? (
+                    /* Plano gratuito - seleção direta */
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      disabled={isProcessing}
+                      onClick={() => handlePlanSelection(plan.id, plan.name)}
+                    >
+                      {isProcessing && selectedPlan === plan.id ? (
+                        'Processando...'
+                      ) : (
+                        'Selecionar Plano Gratuito'
+                      )}
+                    </Button>
                   ) : (
-                    'Selecionar Plano'
+                    /* Plano pago - opções de pagamento */
+                    <>
+                      <Button
+                        className="w-full"
+                        variant="default"
+                        onClick={() => handlePixPayment(plan)}
+                      >
+                        <QrCode className="h-4 w-4 mr-2" />
+                        Pagar via PIX
+                      </Button>
+                      
+                      {/* Botão secundário para seleção direta (trial/teste) */}
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        size="sm"
+                        disabled={isProcessing}
+                        onClick={() => handlePlanSelection(plan.id, plan.name)}
+                      >
+                        {isProcessing && selectedPlan === plan.id ? (
+                          'Processando...'
+                        ) : (
+                          'Testar por 7 dias'
+                        )}
+                      </Button>
+                    </>
                   )}
-                </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
       </DialogContent>
+      
+      {/* Modal PIX */}
+      {selectedPlanForPix && (
+        <MercadoPagoPix
+          open={showPixModal}
+          onOpenChange={setShowPixModal}
+          plan={selectedPlanForPix}
+          onSuccess={handlePixSuccess}
+        />
+      )}
     </Dialog>
   );
 };
