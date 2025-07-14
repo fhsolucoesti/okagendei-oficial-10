@@ -199,6 +199,116 @@ const NavigationManager = ({ navigationSettings, onUpdate }: NavigationManagerPr
           </div>
         </div>
 
+        {/* Configurações de cores dos botões */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Cores dos Botões</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h4 className="font-medium text-gray-700">Botão de Login</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Cor de Fundo</Label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="color"
+                      value={navigationSettings.loginButtonBackgroundColor || '#10b981'}
+                      onChange={(e) => onUpdate({
+                        ...navigationSettings,
+                        loginButtonBackgroundColor: e.target.value
+                      })}
+                      className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                    />
+                    <Input
+                      value={navigationSettings.loginButtonBackgroundColor || '#10b981'}
+                      onChange={(e) => onUpdate({
+                        ...navigationSettings,
+                        loginButtonBackgroundColor: e.target.value
+                      })}
+                      placeholder="#10b981"
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Cor do Texto</Label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="color"
+                      value={navigationSettings.loginButtonTextColor || '#ffffff'}
+                      onChange={(e) => onUpdate({
+                        ...navigationSettings,
+                        loginButtonTextColor: e.target.value
+                      })}
+                      className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                    />
+                    <Input
+                      value={navigationSettings.loginButtonTextColor || '#ffffff'}
+                      onChange={(e) => onUpdate({
+                        ...navigationSettings,
+                        loginButtonTextColor: e.target.value
+                      })}
+                      placeholder="#ffffff"
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="font-medium text-gray-700">Botão de Cadastro</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Cor de Fundo</Label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="color"
+                      value={navigationSettings.signupButtonBackgroundColor || '#f97316'}
+                      onChange={(e) => onUpdate({
+                        ...navigationSettings,
+                        signupButtonBackgroundColor: e.target.value
+                      })}
+                      className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                    />
+                    <Input
+                      value={navigationSettings.signupButtonBackgroundColor || '#f97316'}
+                      onChange={(e) => onUpdate({
+                        ...navigationSettings,
+                        signupButtonBackgroundColor: e.target.value
+                      })}
+                      placeholder="#f97316"
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Cor do Texto</Label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="color"
+                      value={navigationSettings.signupButtonTextColor || '#ffffff'}
+                      onChange={(e) => onUpdate({
+                        ...navigationSettings,
+                        signupButtonTextColor: e.target.value
+                      })}
+                      className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                    />
+                    <Input
+                      value={navigationSettings.signupButtonTextColor || '#ffffff'}
+                      onChange={(e) => onUpdate({
+                        ...navigationSettings,
+                        signupButtonTextColor: e.target.value
+                      })}
+                      placeholder="#ffffff"
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <p className="font-medium">Exibir Botão de Login</p>

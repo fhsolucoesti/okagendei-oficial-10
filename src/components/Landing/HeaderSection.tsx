@@ -105,8 +105,17 @@ const HeaderSection = ({
     .sort((a, b) => a.order - b.order);
 
   // Usar cores personalizadas para os botões
-  const loginButtonColorClass = 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600';
-  const signupButtonColorClass = 'bg-orange-500 hover:bg-orange-600 text-white';
+  const loginButtonStyle = {
+    backgroundColor: navigationSettings.loginButtonBackgroundColor || '#10b981',
+    color: navigationSettings.loginButtonTextColor || '#ffffff',
+    border: `1px solid ${navigationSettings.loginButtonBackgroundColor || '#10b981'}`
+  };
+  
+  const signupButtonStyle = {
+    backgroundColor: navigationSettings.signupButtonBackgroundColor || '#f97316',
+    color: navigationSettings.signupButtonTextColor || '#ffffff',
+    border: `1px solid ${navigationSettings.signupButtonBackgroundColor || '#f97316'}`
+  };
 
   // Determinar qual logo e nome usar (prioridade: hero > plataforma > padrão)
   const displayLogo = heroSection.logoImage || platformConfig.menuLogo;
@@ -149,7 +158,7 @@ const HeaderSection = ({
             {navigationSettings.showLoginButton && (
               <Button 
                 onClick={() => setIsLoginOpen(true)} 
-                className={loginButtonColorClass}
+                style={loginButtonStyle}
               >
                 {loginButtonText}
               </Button>
@@ -157,7 +166,7 @@ const HeaderSection = ({
             {navigationSettings.showSignupButton && (
               <Button 
                 onClick={() => handleNavClick('plans')}
-                className={signupButtonColorClass}
+                style={signupButtonStyle}
               >
                 {navigationSettings.signupButtonText}
               </Button>
@@ -195,7 +204,8 @@ const HeaderSection = ({
                 {navigationSettings.showLoginButton && (
                   <Button 
                     onClick={() => setIsLoginOpen(true)} 
-                    className={`w-full ${loginButtonColorClass}`}
+                    className="w-full"
+                    style={loginButtonStyle}
                   >
                     {loginButtonText}
                   </Button>
@@ -203,7 +213,8 @@ const HeaderSection = ({
                 {navigationSettings.showSignupButton && (
                   <Button 
                     onClick={() => handleNavClick('plans')} 
-                    className={`w-full ${signupButtonColorClass}`}
+                    className="w-full"
+                    style={signupButtonStyle}
                   >
                     {navigationSettings.signupButtonText}
                   </Button>

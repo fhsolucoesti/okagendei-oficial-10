@@ -25,6 +25,10 @@ export interface NavigationSettings {
   showSignupButton: boolean;
   loginButtonText: string;
   signupButtonText: string;
+  loginButtonBackgroundColor?: string;
+  loginButtonTextColor?: string;
+  signupButtonBackgroundColor?: string;
+  signupButtonTextColor?: string;
 }
 
 export interface NavigationItem {

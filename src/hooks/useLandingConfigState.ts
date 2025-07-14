@@ -34,7 +34,11 @@ export const useLandingConfigState = () => {
       showLoginButton: true,
       showSignupButton: true,
       loginButtonText: 'Entrar',
-      signupButtonText: 'Começar Grátis'
+      signupButtonText: 'Começar Grátis',
+      loginButtonBackgroundColor: '#10b981',
+      loginButtonTextColor: '#ffffff',
+      signupButtonBackgroundColor: '#f97316',
+      signupButtonTextColor: '#ffffff'
     },
     logoImage: '',
     backgroundImage: '',
