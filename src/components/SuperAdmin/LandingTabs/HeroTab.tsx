@@ -197,6 +197,17 @@ const HeroTab = ({ heroSection, setHeroSection }: HeroTabProps) => {
               />
             </div>
 
+            <div>
+              <Label htmlFor="trialDescription">Descrição do Teste Grátis</Label>
+              <Textarea
+                id="trialDescription"
+                value={heroSection.trialDescription}
+                onChange={(e) => setHeroSection({...heroSection, trialDescription: e.target.value})}
+                placeholder="Experimente todos os recursos sem pagar nada. Cancele quando quiser."
+                rows={2}
+              />
+            </div>
+
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Mostrar Badge de Teste Grátis</p>

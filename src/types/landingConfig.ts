@@ -12,6 +12,7 @@ export interface HeroSection {
   backgroundImage?: string;
   showTrialBadge?: boolean;
   trialText?: string;
+  trialDescription?: string;
   elements?: HeroElement[];
   highlightItems?: HighlightItem[];
   customStyles?: CustomStyles;

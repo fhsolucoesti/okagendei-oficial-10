@@ -183,7 +183,7 @@ const HeroSection = ({ heroConfig, scrollToSection, setIsLoginOpen }: HeroSectio
                   </span>
                 </div>
                 <p className="text-sm mt-2 opacity-80">
-                  Experimente todos os recursos sem pagar nada. Cancele quando quiser.
+                  {heroConfig.trialDescription || 'Experimente todos os recursos sem pagar nada. Cancele quando quiser.'}
                 </p>
               </div>
             )}

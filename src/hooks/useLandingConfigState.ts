@@ -40,6 +40,7 @@ export const useLandingConfigState = () => {
     backgroundImage: '',
     showTrialBadge: false,
     trialText: '🆓 Teste Grátis por 7 Dias',
+    trialDescription: 'Experimente todos os recursos sem pagar nada. Cancele quando quiser.',
     elements: [],
     highlightItems: [],
     customStyles: {
