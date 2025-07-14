@@ -17,6 +17,7 @@ export interface HeroSection {
   highlightItems?: HighlightItem[];
   customStyles?: CustomStyles;
   colorTheme?: ColorTheme;
+  plans?: Plan[];
 }
 
 export interface NavigationSettings {
@@ -260,6 +261,7 @@ export interface Plan {
   features: string[];
   popular?: boolean;
   isActive: boolean;
+  freeTrial?: number; // dias grátis
 }
 
 export interface SignupSettings {

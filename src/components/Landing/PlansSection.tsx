@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
-import { Plan } from '@/types';
+import { Plan } from '@/types/landingConfig';
 import { useLandingConfig } from '@/contexts/LandingConfigContext';
 
 interface PlansSectionProps {
@@ -80,9 +79,8 @@ const PlansSection = ({ plans, isAnnualBilling, setIsAnnualBilling, handlePlanSe
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {activePlans.map((plan) => {
-            const monthlyPrice = isAnnualBilling ? plan.yearlyPrice / 12 : plan.monthlyPrice;
-            const finalPrice = getDiscountedPrice(monthlyPrice);
-            const isPopular = planSettings.highlightPopularPlan && plan.isPopular;
+            const finalPrice = getDiscountedPrice(plan.price);
+            const isPopular = planSettings.highlightPopularPlan && plan.popular;
             
             return (
               <div
@@ -100,31 +98,21 @@ const PlansSection = ({ plans, isAnnualBilling, setIsAnnualBilling, handlePlanSe
                 )}
                 
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold text-gray-900">
-                      {formatPrice(finalPrice)}
+                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+                  <div className="text-3xl font-bold mb-4">
+                    {formatPrice(isAnnualBilling ? getDiscountedPrice(plan.price * 12) / 12 : getDiscountedPrice(plan.price))}
+                    <span className="text-base font-normal text-muted-foreground">
+                      /{plan.interval === 'month' ? 'mês' : 'ano'}
                     </span>
-                    <span className="text-gray-500 text-lg">/mês</span>
-                    {isAnnualBilling && promotionalSettings.showAnnualDiscount && finalPrice < monthlyPrice && (
-                      <div className="text-sm text-gray-500 line-through">
-                        {formatPrice(monthlyPrice)}/mês
-                      </div>
-                    )}
                   </div>
-                  {promotionalSettings.showFreeTrial && (
-                    <p className="text-sm text-green-600 font-medium">
-                      {promotionalSettings.trialText || `${promotionalSettings.freeTrialDays} dias grátis`}
-                    </p>
+                  {plan.freeTrial && plan.freeTrial > 0 && (
+                    <div className="text-green-600 font-medium mb-4">
+                      {plan.freeTrial} dias grátis
+                    </div>
                   )}
                 </div>
                 
                 <div className="space-y-4 mb-8">
-                  <p className="text-sm text-gray-500 font-medium">
-                    Até {typeof plan.maxEmployees === 'string' ? plan.maxEmployees : plan.maxEmployees} 
-                    {typeof plan.maxEmployees === 'number' ? ' funcionários' : ' funcionários'}
-                  </p>
-                  
                   {/* Usar features array do plano */}
                   {plan.features.map((feature, index) => (
                     <div key={index} className="flex items-center">

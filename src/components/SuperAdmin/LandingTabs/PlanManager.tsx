@@ -25,7 +25,8 @@ const PlanManager = ({ plans, onUpdate }: PlanManagerProps) => {
     interval: 'month',
     features: '',
     popular: false,
-    isActive: true
+    isActive: true,
+    freeTrial: 0
   });
 
   const handleAdd = () => {
@@ -37,7 +38,8 @@ const PlanManager = ({ plans, onUpdate }: PlanManagerProps) => {
       interval: 'month',
       features: '',
       popular: false,
-      isActive: true 
+      isActive: true,
+      freeTrial: 0
     });
     setIsDialogOpen(true);
   };
@@ -51,7 +53,8 @@ const PlanManager = ({ plans, onUpdate }: PlanManagerProps) => {
       interval: plan.interval,
       features: plan.features.join('\n'),
       popular: plan.popular || false,
-      isActive: plan.isActive
+      isActive: plan.isActive,
+      freeTrial: plan.freeTrial || 0
     });
     setIsDialogOpen(true);
   };
@@ -67,7 +70,8 @@ const PlanManager = ({ plans, onUpdate }: PlanManagerProps) => {
       interval: formData.interval,
       features: formData.features.split('\n').filter(f => f.trim()),
       popular: formData.popular,
-      isActive: formData.isActive
+      isActive: formData.isActive,
+      freeTrial: formData.freeTrial > 0 ? formData.freeTrial : undefined
     };
 
     let updatedPlans: Plan[];
@@ -130,7 +134,7 @@ const PlanManager = ({ plans, onUpdate }: PlanManagerProps) => {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="price">Preço (R$)</Label>
                   <Input
@@ -154,6 +158,18 @@ const PlanManager = ({ plans, onUpdate }: PlanManagerProps) => {
                     <option value="month">Mensal</option>
                     <option value="year">Anual</option>
                   </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="freeTrial">Dias Grátis</Label>
+                  <Input
+                    id="freeTrial"
+                    type="number"
+                    min="0"
+                    value={formData.freeTrial}
+                    onChange={(e) => setFormData({...formData, freeTrial: Number(e.target.value)})}
+                    placeholder="0"
+                  />
                 </div>
               </div>
               
@@ -213,6 +229,9 @@ const PlanManager = ({ plans, onUpdate }: PlanManagerProps) => {
                   </div>
                   <p className="text-sm text-muted-foreground">
                     R$ {plan.price}/{plan.interval === 'month' ? 'mês' : 'ano'}
+                    {plan.freeTrial && plan.freeTrial > 0 && (
+                      <span className="text-green-600 ml-2">• {plan.freeTrial} dias grátis</span>
+                    )}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {plan.features.length} recursos inclusos
