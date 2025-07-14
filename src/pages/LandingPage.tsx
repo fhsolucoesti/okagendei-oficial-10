@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLandingConfig } from '@/contexts/LandingConfigContext';
-import { Plan } from '@/types/landingConfig';
+import { Plan } from '@/types';
 import { toast } from 'sonner';
 
 // Components
@@ -20,6 +20,7 @@ import SignupDialog from '@/components/Landing/SignupDialog';
 
 const LandingPage = () => {
   // Use plans directly from DataContext and configurations from LandingConfigContext
+  const { plans } = useData();
   const { createCompanyUser } = useAuth();
   const {
     heroSection,
@@ -125,7 +126,7 @@ const LandingPage = () => {
   };
 
   const getPlanPrice = (plan: Plan) => {
-    return plan.price;
+    return isAnnualBilling ? plan.yearlyPrice : plan.monthlyPrice;
   };
 
   return (
@@ -147,7 +148,7 @@ const LandingPage = () => {
       <FeaturesSection aboutConfig={aboutSection} />
 
       <PlansSection
-        plans={heroSection.plans || []}
+        plans={plans}
         isAnnualBilling={isAnnualBilling}
         setIsAnnualBilling={setIsAnnualBilling}
         handlePlanSelect={handlePlanSelect}

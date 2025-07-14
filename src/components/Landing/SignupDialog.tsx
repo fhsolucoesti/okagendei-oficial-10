@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Gift, Shield, CreditCard, Eye, EyeOff } from 'lucide-react';
-import { Plan } from '@/types/landingConfig';
+import { Plan } from '@/types';
 import { useLandingConfig } from '@/contexts/LandingConfigContext';
 
 interface SignupDialogProps {

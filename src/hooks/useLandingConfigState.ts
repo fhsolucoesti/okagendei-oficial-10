@@ -53,42 +53,7 @@ export const useLandingConfigState = () => {
         background: '#dcfce7',
         text: '#166534'
       }
-    },
-    plans: [
-      {
-        id: '1',
-        name: 'Básico',
-        price: 29.90,
-        currency: 'BRL',
-        interval: 'month',
-        features: ['Até 2 funcionários', 'Agendamentos ilimitados', '1 usuário', 'Suporte por e-mail'],
-        popular: false,
-        isActive: true,
-        freeTrial: 7
-      },
-      {
-        id: '2',
-        name: 'Profissional',
-        price: 49.90,
-        currency: 'BRL',
-        interval: 'month',
-        features: ['Até 5 funcionários', 'Agendamentos ilimitados', '3 usuários', 'Relatórios avançados', 'Suporte prioritário'],
-        popular: true,
-        isActive: true,
-        freeTrial: 15
-      },
-      {
-        id: '3',
-        name: 'Empresarial',
-        price: 99.90,
-        currency: 'BRL',
-        interval: 'month',
-        features: ['Funcionários ilimitados', 'Multi-localização', 'Usuários ilimitados', 'API personalizada', 'Suporte 24/7'],
-        popular: false,
-        isActive: true,
-        freeTrial: 30
-      }
-    ]
+    }
   });
 
   const [aboutSection, setAboutSection] = useState<AboutSection>({
