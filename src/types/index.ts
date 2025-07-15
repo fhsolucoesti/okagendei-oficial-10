@@ -166,6 +166,33 @@ export interface PlatformSettings {
   logo?: string;
 }
 
+export interface Ticket {
+  id: string;
+  title: string;
+  description: string;
+  type: 'problem' | 'suggestion' | 'compliment' | 'contact';
+  status: 'new' | 'in_analysis' | 'responded' | 'closed';
+  companyId: string;
+  company?: {
+    name: string;
+    email: string;
+    phone: string;
+    responsibleName: string;
+  };
+  responses: TicketResponse[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TicketResponse {
+  id: string;
+  ticketId: string;
+  message: string;
+  isFromSupport: boolean;
+  createdAt: string;
+  adminName?: string;
+}
+
 export interface LandingConfig {
   hero: {
     title: string;

@@ -21,7 +21,8 @@ import {
   Menu,
   X,
   Globe,
-  Palette
+  Palette,
+  Headphones
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -96,6 +97,7 @@ const Sidebar = () => {
         { icon: CreditCard, label: 'Planos', path: '/admin/planos' },
         { icon: PieChart, label: 'Financeiro', path: '/admin/financeiro' },
         { icon: Bell, label: 'Notificações', path: '/admin/notificacoes' },
+        { icon: Headphones, label: 'Central de Serviço', path: '/admin/central-servico' },
         { icon: Globe, label: 'Landing Page', path: '/admin/landing-page' },
         { icon: Palette, label: 'Personalização da Plataforma', path: '/admin/personalizacao' },
         { icon: Settings, label: 'Configurações', path: '/admin/configuracoes' }
@@ -110,6 +112,7 @@ const Sidebar = () => {
         { icon: DollarSign, label: 'Financeiro', path: '/empresa/financeiro' },
         { icon: Link, label: 'Link Público', path: '/empresa/link-publico' },
         { icon: CreditCard, label: 'Assinatura', path: '/empresa/assinatura' },
+        { icon: Headphones, label: 'Central de Serviço', path: '/empresa/central-servico' },
         { icon: Settings, label: 'Configurações', path: '/empresa/configuracoes' }
       ];
     } else if (user?.role === 'professional') {

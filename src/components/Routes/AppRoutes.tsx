@@ -12,6 +12,7 @@ import Companies from '@/pages/SuperAdmin/Companies';
 import SuperAdminSettings from '@/pages/SuperAdmin/Settings';
 import LandingPageSettings from '@/pages/SuperAdmin/LandingPageSettings';
 import PlatformCustomization from '@/pages/SuperAdmin/PlatformCustomization';
+import SuperAdminServiceCenter from '@/pages/SuperAdmin/ServiceCenter';
 import PlanManagement from '@/components/PlanManagement';
 import FinancialOverview from '@/components/FinancialOverview';
 import Notifications from '@/components/Notifications';
@@ -24,6 +25,7 @@ import CompanyFinancial from '@/pages/Company/Financial';
 import CompanyPublicLink from '@/pages/Company/PublicLink';
 import CompanySubscription from '@/pages/Company/Subscription';
 import CompanySettings from '@/pages/Company/Settings';
+import CompanyServiceCenter from '@/pages/Company/ServiceCenter';
 import ProfessionalDashboard from '@/pages/Professional/Dashboard';
 import ProfessionalSchedule from '@/pages/Professional/Schedule';
 import ProfessionalCommissions from '@/pages/Professional/Commissions';
@@ -79,6 +81,13 @@ const AppRoutes = () => {
         <ProtectedRoute allowedRoles={['super_admin']}>
           <DashboardLayout>
             <Notifications />
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/central-servico" element={
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <DashboardLayout>
+            <SuperAdminServiceCenter />
           </DashboardLayout>
         </ProtectedRoute>
       } />
@@ -158,6 +167,13 @@ const AppRoutes = () => {
         <ProtectedRoute allowedRoles={['company_admin']}>
           <DashboardLayout>
             <CompanySubscription />
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/empresa/central-servico" element={
+        <ProtectedRoute allowedRoles={['company_admin']}>
+          <DashboardLayout>
+            <CompanyServiceCenter />
           </DashboardLayout>
         </ProtectedRoute>
       } />
