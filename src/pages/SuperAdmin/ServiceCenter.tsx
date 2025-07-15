@@ -6,23 +6,39 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Clock, CheckCircle, XCircle, Eye, Send, Building2, User, Phone, Mail } from 'lucide-react';
-import { Ticket, TicketResponse } from '@/types';
+import { MessageSquare, Clock, CheckCircle, XCircle, Eye, Send, Building2, User, Phone, Mail, Plus, FileImage, Settings, AlertTriangle, Star } from 'lucide-react';
+import { Ticket, TicketResponse, Company } from '@/types';
 import { toast } from '@/hooks/use-toast';
 
 const SuperAdminServiceCenter = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newResponse, setNewResponse] = useState('');
   const [newStatus, setNewStatus] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [newTicket, setNewTicket] = useState({
+    title: '',
+    description: '',
+    type: 'problem' as const,
+    priority: 'medium' as const,
+    companyId: ''
+  });
 
-  // Simular dados de tickets
   useEffect(() => {
+    // Carregar empresas
+    setCompanies([
+      { id: '1', name: 'Salão Beleza & Estilo', email: 'contato@belezaestilo.com', phone: '(11) 99999-9999', address: 'Rua das Flores, 123', plan: 'Pro', status: 'active', employees: 5, monthlyRevenue: 15000, trialEndsAt: null, createdAt: '2024-01-01' },
+      { id: '2', name: 'Barbearia Moderna', email: 'contato@barberiamoderna.com', phone: '(11) 88888-8888', address: 'Av. Principal, 456', plan: 'Basic', status: 'active', employees: 3, monthlyRevenue: 8000, trialEndsAt: null, createdAt: '2024-01-02' },
+      { id: '3', name: 'Clínica Dental Sorriso', email: 'contato@dentalsorriso.com', phone: '(11) 77777-7777', address: 'Rua da Saúde, 789', plan: 'Premium', status: 'active', employees: 8, monthlyRevenue: 25000, trialEndsAt: null, createdAt: '2024-01-03' }
+    ]);
+
+    // Carregar tickets
     setTickets([
       {
         id: '1',
@@ -30,6 +46,7 @@ const SuperAdminServiceCenter = () => {
         description: 'Os agendamentos não estão sendo sincronizados corretamente com o WhatsApp.',
         type: 'problem',
         status: 'responded',
+        priority: 'high',
         companyId: '1',
         company: {
           name: 'Salão Beleza & Estilo',
@@ -48,7 +65,8 @@ const SuperAdminServiceCenter = () => {
           }
         ],
         createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        createdBy: 'company'
       },
       {
         id: '2',
@@ -56,6 +74,7 @@ const SuperAdminServiceCenter = () => {
         description: 'Seria interessante adicionar gráficos de evolução mensal no relatório financeiro.',
         type: 'suggestion',
         status: 'new',
+        priority: 'medium',
         companyId: '2',
         company: {
           name: 'Barbearia Moderna',
@@ -65,7 +84,8 @@ const SuperAdminServiceCenter = () => {
         },
         responses: [],
         createdAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()
+        updatedAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
+        createdBy: 'company'
       },
       {
         id: '3',
@@ -73,6 +93,7 @@ const SuperAdminServiceCenter = () => {
         description: 'Gostaria de parabenizar toda a equipe pelo excelente atendimento e suporte prestado.',
         type: 'compliment',
         status: 'in_analysis',
+        priority: 'low',
         companyId: '3',
         company: {
           name: 'Clínica Dental Sorriso',
@@ -82,7 +103,8 @@ const SuperAdminServiceCenter = () => {
         },
         responses: [],
         createdAt: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString()
+        updatedAt: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString(),
+        createdBy: 'company'
       }
     ]);
   }, []);
@@ -132,6 +154,45 @@ const SuperAdminServiceCenter = () => {
     }
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'Alta';
+      case 'medium':
+        return 'Média';
+      case 'low':
+        return 'Baixa';
+      default:
+        return priority;
+    }
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+      case 'medium':
+        return <Clock className="w-4 h-4 text-yellow-500" />;
+      case 'low':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      default:
+        return <MessageSquare className="w-4 h-4" />;
+    }
+  };
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'problem':
@@ -147,10 +208,47 @@ const SuperAdminServiceCenter = () => {
     }
   };
 
-  const filteredTickets = tickets.filter(ticket => {
-    if (statusFilter === 'all') return true;
-    return ticket.status === statusFilter;
-  });
+  const handleCreateTicket = () => {
+    if (!newTicket.title || !newTicket.description || !newTicket.companyId) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha todos os campos obrigatórios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedCompany = companies.find(c => c.id === newTicket.companyId);
+    
+    const ticket: Ticket = {
+      id: Date.now().toString(),
+      title: newTicket.title,
+      description: newTicket.description,
+      type: newTicket.type,
+      priority: newTicket.priority,
+      status: 'new',
+      companyId: newTicket.companyId,
+      company: selectedCompany ? {
+        name: selectedCompany.name,
+        email: selectedCompany.email,
+        phone: selectedCompany.phone,
+        responsibleName: 'Responsável'
+      } : undefined,
+      responses: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdBy: 'admin'
+    };
+
+    setTickets([ticket, ...tickets]);
+    setNewTicket({ title: '', description: '', type: 'problem', priority: 'medium', companyId: '' });
+    setIsCreateModalOpen(false);
+    
+    toast({
+      title: "Sucesso",
+      description: "Chamado criado com sucesso!",
+    });
+  };
 
   const getTicketCounts = () => {
     return {
@@ -162,11 +260,10 @@ const SuperAdminServiceCenter = () => {
     };
   };
 
-  const handleViewTicket = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setNewStatus(ticket.status);
-    setIsViewModalOpen(true);
-  };
+  const filteredTickets = tickets.filter(ticket => {
+    if (statusFilter === 'all') return true;
+    return ticket.status === statusFilter;
+  });
 
   const handleSendResponse = () => {
     if (!newResponse.trim() || !selectedTicket) return;
@@ -215,12 +312,112 @@ const SuperAdminServiceCenter = () => {
     });
   };
 
+  const handleViewTicket = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+    setNewStatus(ticket.status);
+    setIsViewModalOpen(true);
+  };
+
   const counts = getTicketCounts();
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Central de Serviço - Suporte</h1>
+        <div className="flex gap-2">
+          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Chamado
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Criar Novo Chamado</DialogTitle>
+                <DialogDescription>
+                  Criar um chamado em nome de uma empresa
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="company">Empresa *</Label>
+                  <Select value={newTicket.companyId} onValueChange={(value) => setNewTicket({ ...newTicket, companyId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma empresa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="title">Título *</Label>
+                  <Input
+                    id="title"
+                    value={newTicket.title}
+                    onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
+                    placeholder="Digite o título do chamado"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="type">Tipo *</Label>
+                  <Select value={newTicket.type} onValueChange={(value: any) => setNewTicket({ ...newTicket, type: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="problem">Problema</SelectItem>
+                      <SelectItem value="suggestion">Sugestão</SelectItem>
+                      <SelectItem value="compliment">Elogio</SelectItem>
+                      <SelectItem value="contact">Contato</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="priority">Prioridade *</Label>
+                  <Select value={newTicket.priority} onValueChange={(value: any) => setNewTicket({ ...newTicket, priority: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="high">Alta</SelectItem>
+                      <SelectItem value="medium">Média</SelectItem>
+                      <SelectItem value="low">Baixa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Descrição *</Label>
+                  <Textarea
+                    id="description"
+                    value={newTicket.description}
+                    onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                    placeholder="Descreva detalhadamente o chamado"
+                    rows={4}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleCreateTicket}>
+                    Criar Chamado
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Tabs value={statusFilter} onValueChange={setStatusFilter}>
@@ -245,8 +442,15 @@ const SuperAdminServiceCenter = () => {
                         <Badge className={getStatusColor(ticket.status)}>
                           {getStatusLabel(ticket.status)}
                         </Badge>
+                        {getPriorityIcon(ticket.priority)}
+                        <Badge className={getPriorityColor(ticket.priority)}>
+                          {getPriorityLabel(ticket.priority)}
+                        </Badge>
                         {ticket.status === 'new' && (
                           <Badge className="bg-red-100 text-red-800">Não Lido</Badge>
+                        )}
+                        {ticket.createdBy === 'admin' && (
+                          <Badge className="bg-purple-100 text-purple-800">Admin</Badge>
                         )}
                       </div>
                       <CardTitle className="text-lg">{ticket.title}</CardTitle>
@@ -334,13 +538,17 @@ const SuperAdminServiceCenter = () => {
                 </div>
                 
                 <div>
-                  <h4 className="font-medium mb-2">Status do Chamado:</h4>
+                  <h4 className="font-medium mb-2">Status e Prioridade:</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       {getTypeIcon(selectedTicket.type)}
                       <Badge variant="outline">{getTypeLabel(selectedTicket.type)}</Badge>
                       <Badge className={getStatusColor(selectedTicket.status)}>
                         {getStatusLabel(selectedTicket.status)}
+                      </Badge>
+                      {getPriorityIcon(selectedTicket.priority)}
+                      <Badge className={getPriorityColor(selectedTicket.priority)}>
+                        {getPriorityLabel(selectedTicket.priority)}
                       </Badge>
                     </div>
                     <Select value={newStatus} onValueChange={setNewStatus}>
@@ -373,6 +581,30 @@ const SuperAdminServiceCenter = () => {
                 <h4 className="font-medium mb-2">Descrição:</h4>
                 <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{selectedTicket.description}</p>
               </div>
+
+              {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2">Anexos:</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedTicket.attachments.map((attachment) => (
+                      <div key={attachment.id} className="border rounded-lg p-2">
+                        <div className="flex items-center gap-2">
+                          <FileImage className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm truncate">{attachment.filename}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => window.open(attachment.url, '_blank')}
+                            className="h-6 w-6"
+                          >
+                            <Eye className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {selectedTicket.responses.length > 0 && (
                 <div>

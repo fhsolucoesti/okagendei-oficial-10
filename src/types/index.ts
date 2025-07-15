@@ -172,6 +172,7 @@ export interface Ticket {
   description: string;
   type: 'problem' | 'suggestion' | 'compliment' | 'contact';
   status: 'new' | 'in_analysis' | 'responded' | 'closed';
+  priority: 'low' | 'medium' | 'high';
   companyId: string;
   company?: {
     name: string;
@@ -179,9 +180,19 @@ export interface Ticket {
     phone: string;
     responsibleName: string;
   };
+  attachments?: TicketAttachment[];
   responses: TicketResponse[];
   createdAt: string;
   updatedAt: string;
+  createdBy?: 'company' | 'admin';
+}
+
+export interface TicketAttachment {
+  id: string;
+  filename: string;
+  url: string;
+  size: number;
+  type: string;
 }
 
 export interface TicketResponse {

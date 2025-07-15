@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, MessageSquare, Clock, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Plus, MessageSquare, Clock, CheckCircle, XCircle, Eye, Upload, X, FileImage } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Ticket, TicketResponse } from '@/types';
+import { Ticket, TicketResponse, TicketAttachment } from '@/types';
 import { toast } from '@/hooks/use-toast';
 
 const ServiceCenter = () => {
@@ -19,13 +19,14 @@ const ServiceCenter = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newTicket, setNewTicket] = useState({
     title: '',
     description: '',
     type: 'problem' as const
   });
 
-  // Simular dados de tickets
   useEffect(() => {
     if (user?.companyId) {
       setTickets([
@@ -35,6 +36,7 @@ const ServiceCenter = () => {
           description: 'Os agendamentos não estão sendo sincronizados corretamente com o WhatsApp.',
           type: 'problem',
           status: 'responded',
+          priority: 'high',
           companyId: user.companyId,
           responses: [
             {
@@ -47,7 +49,8 @@ const ServiceCenter = () => {
             }
           ],
           createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+          updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          createdBy: 'company'
         },
         {
           id: '2',
@@ -55,10 +58,12 @@ const ServiceCenter = () => {
           description: 'Seria interessante adicionar gráficos de evolução mensal no relatório financeiro.',
           type: 'suggestion',
           status: 'in_analysis',
+          priority: 'medium',
           companyId: user.companyId,
           responses: [],
           createdAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()
+          updatedAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
+          createdBy: 'company'
         }
       ]);
     }
@@ -109,6 +114,34 @@ const ServiceCenter = () => {
     }
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const attachment: TicketAttachment = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            filename: file.name,
+            url: URL.createObjectURL(file),
+            size: file.size,
+            type: file.type
+          };
+          setAttachments(prev => [...prev, attachment]);
+        } else {
+          toast({
+            title: "Erro",
+            description: "Apenas arquivos de imagem são permitidos.",
+            variant: "destructive",
+          });
+        }
+      });
+    }
+  };
+
+  const removeAttachment = (attachmentId: string) => {
+    setAttachments(prev => prev.filter(att => att.id !== attachmentId));
+  };
+
   const handleCreateTicket = () => {
     if (!newTicket.title || !newTicket.description) {
       toast({
@@ -125,14 +158,18 @@ const ServiceCenter = () => {
       description: newTicket.description,
       type: newTicket.type,
       status: 'new',
+      priority: 'medium',
       companyId: user?.companyId || '',
+      attachments: attachments.length > 0 ? attachments : undefined,
       responses: [],
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      createdBy: 'company'
     };
 
     setTickets([ticket, ...tickets]);
     setNewTicket({ title: '', description: '', type: 'problem' });
+    setAttachments([]);
     setIsCreateModalOpen(false);
     
     toast({
@@ -196,6 +233,54 @@ const ServiceCenter = () => {
                   placeholder="Descreva detalhadamente sua solicitação"
                   rows={4}
                 />
+              </div>
+
+              <div>
+                <Label>Anexar Imagens (opcional)</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Adicionar Imagem
+                    </Button>
+                    <span className="text-sm text-gray-500">PNG, JPG até 5MB</span>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  
+                  {attachments.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {attachments.map((attachment) => (
+                        <div key={attachment.id} className="relative border rounded-lg p-2">
+                          <div className="flex items-center gap-2">
+                            <FileImage className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm truncate">{attachment.filename}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeAttachment(attachment.id)}
+                              className="h-6 w-6"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end space-x-2">
@@ -289,6 +374,30 @@ const ServiceCenter = () => {
                 <h4 className="font-medium mb-2">Descrição:</h4>
                 <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{selectedTicket.description}</p>
               </div>
+
+              {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2">Anexos:</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedTicket.attachments.map((attachment) => (
+                      <div key={attachment.id} className="border rounded-lg p-2">
+                        <div className="flex items-center gap-2">
+                          <FileImage className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm truncate">{attachment.filename}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => window.open(attachment.url, '_blank')}
+                            className="h-6 w-6"
+                          >
+                            <Eye className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {selectedTicket.responses.length > 0 && (
                 <div>
