@@ -1,0 +1,264 @@
+{
+  "database": "okagendei",
+  "version": "1.0",
+  "description": "Sistema de agendamento online com múltiplos perfis",
+  "tables": {
+    "plans": {
+      "description": "Planos de assinatura",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "name": { "type": "VARCHAR(255)", "required": true },
+        "max_employees": { "type": "VARCHAR(255)", "required": true },
+        "monthly_price": { "type": "DECIMAL(10,2)", "required": true },
+        "yearly_price": { "type": "DECIMAL(10,2)", "required": true },
+        "features": { "type": "JSONB", "required": false, "default": "[]" },
+        "is_popular": { "type": "BOOLEAN", "required": false, "default": false },
+        "is_active": { "type": "BOOLEAN", "required": false, "default": true },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": []
+    },
+    "companies": {
+      "description": "Empresas cadastradas",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "name": { "type": "VARCHAR(255)", "required": true },
+        "email": { "type": "VARCHAR(255)", "required": true },
+        "phone": { "type": "VARCHAR(255)", "required": true },
+        "address": { "type": "VARCHAR(255)", "required": true },
+        "plan": { "type": "VARCHAR(255)", "required": true, "default": "basic" },
+        "status": { "type": "ENUM", "values": ["active", "trial", "suspended", "cancelled"], "default": "trial" },
+        "employees": { "type": "INTEGER", "required": false, "default": 1 },
+        "monthly_revenue": { "type": "DECIMAL(10,2)", "required": false, "default": 0 },
+        "trial_ends_at": { "type": "TIMESTAMP", "required": false },
+        "custom_url": { "type": "VARCHAR(255)", "required": false, "unique": true },
+        "logo": { "type": "VARCHAR(255)", "required": false },
+        "next_payment": { "type": "TIMESTAMP", "required": false },
+        "overdue_days": { "type": "INTEGER", "required": false, "default": 0 },
+        "whatsapp_number": { "type": "VARCHAR(255)", "required": false },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "hasMany", "target": "users", "foreignKey": "company_id" },
+        { "type": "hasMany", "target": "professionals", "foreignKey": "company_id" },
+        { "type": "hasMany", "target": "services", "foreignKey": "company_id" },
+        { "type": "hasMany", "target": "clients", "foreignKey": "company_id" },
+        { "type": "hasMany", "target": "appointments", "foreignKey": "company_id" },
+        { "type": "hasMany", "target": "expenses", "foreignKey": "company_id" },
+        { "type": "hasMany", "target": "invoices", "foreignKey": "company_id" },
+        { "type": "hasMany", "target": "notifications", "foreignKey": "company_id" }
+      ]
+    },
+    "users": {
+      "description": "Usuários do sistema",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "name": { "type": "VARCHAR(255)", "required": true },
+        "email": { "type": "VARCHAR(255)", "required": true, "unique": true },
+        "password": { "type": "VARCHAR(255)", "required": true },
+        "role": { "type": "ENUM", "values": ["super_admin", "company_admin", "professional"], "default": "professional" },
+        "company_id": { "type": "UUID", "required": false, "foreignKey": "companies.id" },
+        "avatar": { "type": "VARCHAR(255)", "required": false },
+        "must_change_password": { "type": "BOOLEAN", "required": false, "default": false },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "companies", "foreignKey": "company_id" },
+        { "type": "hasOne", "target": "professionals", "foreignKey": "user_id" }
+      ]
+    },
+    "professionals": {
+      "description": "Profissionais da empresa",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "name": { "type": "VARCHAR(255)", "required": true },
+        "email": { "type": "VARCHAR(255)", "required": true },
+        "phone": { "type": "VARCHAR(255)", "required": false },
+        "specialties": { "type": "JSONB", "required": false, "default": "[]" },
+        "commission": { "type": "DECIMAL(5,2)", "required": false, "default": 0 },
+        "is_active": { "type": "BOOLEAN", "required": false, "default": true },
+        "image_url": { "type": "VARCHAR(255)", "required": false },
+        "user_id": { "type": "UUID", "required": true, "foreignKey": "users.id" },
+        "company_id": { "type": "UUID", "required": true, "foreignKey": "companies.id" },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "users", "foreignKey": "user_id" },
+        { "type": "belongsTo", "target": "companies", "foreignKey": "company_id" },
+        { "type": "hasMany", "target": "appointments", "foreignKey": "professional_id" },
+        { "type": "hasMany", "target": "commissions", "foreignKey": "professional_id" },
+        { "type": "hasMany", "target": "working_hours", "foreignKey": "professional_id" }
+      ]
+    },
+    "services": {
+      "description": "Serviços oferecidos",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "name": { "type": "VARCHAR(255)", "required": true },
+        "description": { "type": "TEXT", "required": false },
+        "price": { "type": "DECIMAL(10,2)", "required": true },
+        "duration": { "type": "INTEGER", "required": true },
+        "is_active": { "type": "BOOLEAN", "required": false, "default": true },
+        "image_url": { "type": "VARCHAR(255)", "required": false },
+        "company_id": { "type": "UUID", "required": true, "foreignKey": "companies.id" },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "companies", "foreignKey": "company_id" },
+        { "type": "hasMany", "target": "appointments", "foreignKey": "service_id" }
+      ]
+    },
+    "clients": {
+      "description": "Clientes da empresa",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "name": { "type": "VARCHAR(255)", "required": true },
+        "phone": { "type": "VARCHAR(255)", "required": true },
+        "email": { "type": "VARCHAR(255)", "required": false },
+        "birth_date": { "type": "DATE", "required": false },
+        "total_appointments": { "type": "INTEGER", "required": false, "default": 0 },
+        "last_appointment": { "type": "DATE", "required": false },
+        "company_id": { "type": "UUID", "required": true, "foreignKey": "companies.id" },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "companies", "foreignKey": "company_id" }
+      ]
+    },
+    "appointments": {
+      "description": "Agendamentos realizados",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "client_name": { "type": "VARCHAR(255)", "required": true },
+        "client_phone": { "type": "VARCHAR(255)", "required": true },
+        "client_birth_date": { "type": "DATE", "required": false },
+        "date": { "type": "DATE", "required": true },
+        "time": { "type": "TIME", "required": true },
+        "duration": { "type": "INTEGER", "required": true },
+        "price": { "type": "DECIMAL(10,2)", "required": true },
+        "status": { "type": "ENUM", "values": ["scheduled", "completed", "cancelled", "no_show"], "default": "scheduled" },
+        "notes": { "type": "TEXT", "required": false },
+        "company_id": { "type": "UUID", "required": true, "foreignKey": "companies.id" },
+        "professional_id": { "type": "UUID", "required": true, "foreignKey": "professionals.id" },
+        "service_id": { "type": "UUID", "required": true, "foreignKey": "services.id" },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "companies", "foreignKey": "company_id" },
+        { "type": "belongsTo", "target": "professionals", "foreignKey": "professional_id" },
+        { "type": "belongsTo", "target": "services", "foreignKey": "service_id" },
+        { "type": "hasMany", "target": "commissions", "foreignKey": "appointment_id" }
+      ]
+    },
+    "working_hours": {
+      "description": "Horários de trabalho dos profissionais",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "day_of_week": { "type": "INTEGER", "required": true, "min": 0, "max": 6 },
+        "start_time": { "type": "TIME", "required": true },
+        "end_time": { "type": "TIME", "required": true },
+        "is_available": { "type": "BOOLEAN", "required": false, "default": true },
+        "professional_id": { "type": "UUID", "required": true, "foreignKey": "professionals.id" },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "professionals", "foreignKey": "professional_id" }
+      ]
+    },
+    "commissions": {
+      "description": "Comissões dos profissionais",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "amount": { "type": "DECIMAL(10,2)", "required": true },
+        "date": { "type": "DATE", "required": true },
+        "status": { "type": "ENUM", "values": ["pending", "paid"], "default": "pending" },
+        "professional_id": { "type": "UUID", "required": true, "foreignKey": "professionals.id" },
+        "appointment_id": { "type": "UUID", "required": true, "foreignKey": "appointments.id" },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "professionals", "foreignKey": "professional_id" },
+        { "type": "belongsTo", "target": "appointments", "foreignKey": "appointment_id" }
+      ]
+    },
+    "expenses": {
+      "description": "Despesas da empresa",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "description": { "type": "VARCHAR(255)", "required": true },
+        "amount": { "type": "DECIMAL(10,2)", "required": true },
+        "category": { "type": "VARCHAR(255)", "required": true },
+        "date": { "type": "DATE", "required": true },
+        "company_id": { "type": "UUID", "required": true, "foreignKey": "companies.id" },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "companies", "foreignKey": "company_id" }
+      ]
+    },
+    "invoices": {
+      "description": "Faturas da empresa",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "amount": { "type": "DECIMAL(10,2)", "required": true },
+        "due_date": { "type": "DATE", "required": true },
+        "status": { "type": "ENUM", "values": ["pending", "paid", "overdue"], "default": "pending" },
+        "description": { "type": "TEXT", "required": true },
+        "company_id": { "type": "UUID", "required": true, "foreignKey": "companies.id" },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "companies", "foreignKey": "company_id" }
+      ]
+    },
+    "notifications": {
+      "description": "Notificações do sistema",
+      "columns": {
+        "id": { "type": "UUID", "primaryKey": true, "required": true },
+        "type": { "type": "ENUM", "values": ["appointment", "payment", "system", "company_registered", "payment_overdue"], "required": true },
+        "title": { "type": "VARCHAR(255)", "required": true },
+        "message": { "type": "TEXT", "required": true },
+        "is_read": { "type": "BOOLEAN", "required": false, "default": false },
+        "priority": { "type": "ENUM", "values": ["low", "medium", "high"], "default": "medium" },
+        "company_id": { "type": "UUID", "required": false, "foreignKey": "companies.id" },
+        "created_at": { "type": "TIMESTAMP", "required": true },
+        "updated_at": { "type": "TIMESTAMP", "required": true }
+      },
+      "relationships": [
+        { "type": "belongsTo", "target": "companies", "foreignKey": "company_id" }
+      ]
+    }
+  },
+  "indexes": [
+    { "table": "users", "column": "email", "type": "btree" },
+    { "table": "users", "column": "company_id", "type": "btree" },
+    { "table": "professionals", "column": "company_id", "type": "btree" },
+    { "table": "professionals", "column": "user_id", "type": "btree" },
+    { "table": "appointments", "column": "date", "type": "btree" },
+    { "table": "appointments", "column": "professional_id", "type": "btree" },
+    { "table": "appointments", "column": "company_id", "type": "btree" },
+    { "table": "appointments", "column": "service_id", "type": "btree" },
+    { "table": "services", "column": "company_id", "type": "btree" },
+    { "table": "clients", "column": "company_id", "type": "btree" },
+    { "table": "working_hours", "column": "professional_id", "type": "btree" },
+    { "table": "commissions", "column": "professional_id", "type": "btree" },
+    { "table": "commissions", "column": "appointment_id", "type": "btree" },
+    { "table": "expenses", "column": "company_id", "type": "btree" },
+    { "table": "expenses", "column": "date", "type": "btree" },
+    { "table": "invoices", "column": "company_id", "type": "btree" },
+    { "table": "invoices", "column": "due_date", "type": "btree" },
+    { "table": "notifications", "column": "company_id", "type": "btree" },
+    { "table": "notifications", "column": "is_read", "type": "btree" }
+  ]
+}
