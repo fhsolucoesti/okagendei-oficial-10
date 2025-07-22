@@ -49,7 +49,7 @@ const SuperAdminDashboard = () => {
                 R$ {totalRevenue.toLocaleString('pt-BR')}
               </div>
               <p className="text-xs text-green-200">
-                +12% em relação ao mês anterior
+                Sem dados de comparação
               </p>
             </CardContent>
           </Card>
@@ -62,9 +62,9 @@ const SuperAdminDashboard = () => {
               <Users className="h-4 w-4 text-purple-200" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">247</div>
+              <div className="text-2xl font-bold">0</div>
               <p className="text-xs text-purple-200">
-                Em todas as empresas
+                Nenhum usuário ativo
               </p>
             </CardContent>
           </Card>
@@ -77,9 +77,9 @@ const SuperAdminDashboard = () => {
               <TrendingUp className="h-4 w-4 text-orange-200" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+28%</div>
+              <div className="text-2xl font-bold">0%</div>
               <p className="text-xs text-orange-200">
-                Novas empresas este mês
+                Nenhuma empresa nova
               </p>
             </CardContent>
           </Card>
@@ -129,32 +129,11 @@ const SuperAdminDashboard = () => {
               <CardDescription>Itens que precisam de atenção</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                    <p className="text-sm font-medium text-yellow-800">
-                      3 empresas com teste expirando em 2 dias
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4 text-red-600" />
-                    <p className="text-sm font-medium text-red-800">
-                      2 faturas em atraso
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                    <p className="text-sm font-medium text-green-800">
-                      Meta mensal atingida: 100%
-                    </p>
-                  </div>
+              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-center">
+                  <p className="text-sm text-gray-600">
+                    Nenhum alerta no momento
+                  </p>
                 </div>
               </div>
             </CardContent>

@@ -31,82 +31,11 @@ const SuperAdminServiceCenter = () => {
   });
 
   useEffect(() => {
-    // Carregar empresas
-    setCompanies([
-      { id: '1', name: 'Salão Beleza & Estilo', email: 'contato@belezaestilo.com', phone: '(11) 99999-9999', address: 'Rua das Flores, 123', plan: 'Pro', status: 'active', employees: 5, monthlyRevenue: 15000, trialEndsAt: null, createdAt: '2024-01-01' },
-      { id: '2', name: 'Barbearia Moderna', email: 'contato@barberiamoderna.com', phone: '(11) 88888-8888', address: 'Av. Principal, 456', plan: 'Basic', status: 'active', employees: 3, monthlyRevenue: 8000, trialEndsAt: null, createdAt: '2024-01-02' },
-      { id: '3', name: 'Clínica Dental Sorriso', email: 'contato@dentalsorriso.com', phone: '(11) 77777-7777', address: 'Rua da Saúde, 789', plan: 'Premium', status: 'active', employees: 8, monthlyRevenue: 25000, trialEndsAt: null, createdAt: '2024-01-03' }
-    ]);
+    // Carregar empresas - dados limpos
+    setCompanies([]);
 
-    // Carregar tickets
-    setTickets([
-      {
-        id: '1',
-        title: 'Problema com sincronização de agendamentos',
-        description: 'Os agendamentos não estão sendo sincronizados corretamente com o WhatsApp.',
-        type: 'problem',
-        status: 'responded',
-        priority: 'high',
-        companyId: '1',
-        company: {
-          name: 'Salão Beleza & Estilo',
-          email: 'contato@belezaestilo.com',
-          phone: '(11) 99999-9999',
-          responsibleName: 'Maria Silva'
-        },
-        responses: [
-          {
-            id: '1',
-            ticketId: '1',
-            message: 'Olá! Recebemos sua solicitação e estamos analisando o problema. Nossa equipe técnica entrará em contato em breve.',
-            isFromSupport: true,
-            createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            adminName: 'João Admin'
-          }
-        ],
-        createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        createdBy: 'company'
-      },
-      {
-        id: '2',
-        title: 'Sugestão de melhoria no relatório financeiro',
-        description: 'Seria interessante adicionar gráficos de evolução mensal no relatório financeiro.',
-        type: 'suggestion',
-        status: 'new',
-        priority: 'medium',
-        companyId: '2',
-        company: {
-          name: 'Barbearia Moderna',
-          email: 'contato@barberiamoderna.com',
-          phone: '(11) 88888-8888',
-          responsibleName: 'Carlos Santos'
-        },
-        responses: [],
-        createdAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-        createdBy: 'company'
-      },
-      {
-        id: '3',
-        title: 'Elogio ao atendimento',
-        description: 'Gostaria de parabenizar toda a equipe pelo excelente atendimento e suporte prestado.',
-        type: 'compliment',
-        status: 'in_analysis',
-        priority: 'low',
-        companyId: '3',
-        company: {
-          name: 'Clínica Dental Sorriso',
-          email: 'contato@dentalsorriso.com',
-          phone: '(11) 77777-7777',
-          responsibleName: 'Ana Paula'
-        },
-        responses: [],
-        createdAt: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString(),
-        createdBy: 'company'
-      }
-    ]);
+    // Carregar tickets - dados limpos  
+    setTickets([]);
   }, []);
 
   const getStatusColor = (status: string) => {
