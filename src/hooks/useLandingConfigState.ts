@@ -17,13 +17,13 @@ import { loadAllConfigurations, saveAllConfigurations as saveConfigs } from '@/u
 
 export const useLandingConfigState = () => {
   const [heroSection, setHeroSection] = useState<HeroSection>({
-    title: 'OKAgendei: Sistema de Agendamento Online',
-    subtitle: 'Simplifique sua gestão com nosso sistema de agendamento online. Ideal para salões de beleza, clínicas e profissionais autônomos.',
-    image: '/images/hero-image.png',
-    ctaButtonText: 'Começar Agora',
-    ctaText: 'Começar Agora',
+    title: 'Sistema de Agendamento Online',
+    subtitle: 'Gerencie seus agendamentos de forma simples e eficiente com nossa plataforma completa.',
+    image: '',
+    ctaButtonText: 'Começar Teste Grátis',
+    ctaText: 'Começar Teste Grátis',
     ctaButtonColor: 'blue',
-    secondaryButtonText: 'Saiba Mais',
+    secondaryButtonText: 'Ver Planos',
     navigationSettings: {
       items: [
         { id: '1', name: 'Recursos', action: 'features', isActive: true, order: 0 },
@@ -85,38 +85,23 @@ export const useLandingConfigState = () => {
   });
 
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
-    companyName: 'OKAgendei',
-    companyDescription: 'Sistema de agendamento online para profissionais e empresas.',
-    companyLogo: '/logo.png',
-    companyEmail: 'contato@okagendei.com',
-    companyPhone: '+55 11 99999-9999',
-    companyAddress: 'Rua Exemplo, 123 - São Paulo, SP'
+    companyName: 'Sistema de Agendamento',
+    companyDescription: 'Plataforma completa para gerenciar agendamentos e clientes.',
+    companyLogo: '',
+    companyEmail: 'contato@empresa.com',
+    companyPhone: '',
+    companyAddress: ''
   });
 
   const [socialLinks, setSocialLinks] = useState<SocialLinks>({
-    facebook: 'https://facebook.com/okagendei',
-    instagram: 'https://instagram.com/okagendei',
-    twitter: 'https://twitter.com/okagendei',
-    linkedin: 'https://linkedin.com/company/okagendei',
+    facebook: '',
+    instagram: '',
+    twitter: '',
+    linkedin: '',
     socialNetworks: []
   });
 
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([
-    {
-      id: '1',
-      name: 'Maria Silva',
-      title: 'Dona de Salão de Beleza',
-      testimonial: 'OKAgendei transformou a forma como gerencio meu salão. Agendamento fácil e lembretes automáticos são incríveis!',
-      image: '/images/testimonial1.jpg'
-    },
-    {
-      id: '2',
-      name: 'João Santos',
-      title: 'Profissional Autônomo',
-      testimonial: 'Com OKAgendei, consigo focar no meu trabalho e não perder tempo com agendamentos. Recomendo!',
-      image: '/images/testimonial2.jpg'
-    }
-  ]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
 
   const [legalLinks, setLegalLinks] = useState<LegalLinks>({
     termsOfService: '/terms',
