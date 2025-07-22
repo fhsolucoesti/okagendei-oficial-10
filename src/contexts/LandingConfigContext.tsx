@@ -83,7 +83,7 @@ interface LandingConfigProviderProps {
 }
 
 export const LandingConfigProvider = ({ children }: LandingConfigProviderProps) => {
-  // Remove useData dependency for now to avoid circular dependency
+  const { plans } = useData();
   
   // Use custom hooks for state management
   const configState = useLandingConfigState();

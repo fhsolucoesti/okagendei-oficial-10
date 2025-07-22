@@ -12,16 +12,38 @@ import FinancialOverview from '@/components/FinancialOverview';
 import Notifications from '@/components/Notifications';
 
 const Index = () => {
-  const [companies, setCompanies] = useState<Array<{
-    id: number;
-    name: string;
-    plan: string;
-    status: 'active' | 'trial';
-    employees: number;
-    monthlyRevenue: number;
-    trialEndsAt: string | null;
-    createdAt: string;
-  }>>([]);
+  const [companies, setCompanies] = useState([
+    {
+      id: 1,
+      name: "Barbearia do João",
+      plan: "Profissional",
+      status: "active" as const,
+      employees: 3,
+      monthlyRevenue: 8500,
+      trialEndsAt: null,
+      createdAt: "2024-01-15"
+    },
+    {
+      id: 2,
+      name: "Studio Bella Nails",
+      plan: "Básico",
+      status: "trial" as const,
+      employees: 1,
+      monthlyRevenue: 2800,
+      trialEndsAt: "2024-07-09",
+      createdAt: "2024-07-02"
+    },
+    {
+      id: 3,
+      name: "Clínica Estética Renovar",
+      plan: "Empresarial",
+      status: "active" as const,
+      employees: 8,
+      monthlyRevenue: 15200,
+      trialEndsAt: null,
+      createdAt: "2024-02-10"
+    }
+  ]);
 
   const totalCompanies = companies.length;
   const activeCompanies = companies.filter(c => c.status === 'active').length;
@@ -50,7 +72,7 @@ const Index = () => {
               <Button variant="outline" size="sm">
                 <Bell className="h-4 w-4 mr-2" />
                 Notificações
-                <Badge variant="secondary" className="ml-2">0</Badge>
+                <Badge variant="destructive" className="ml-2">3</Badge>
               </Button>
               <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
                 <Plus className="h-4 w-4 mr-2" />
@@ -92,7 +114,7 @@ const Index = () => {
                 R$ {totalRevenue.toLocaleString('pt-BR')}
               </div>
               <p className="text-xs text-green-200">
-                Sem dados de comparação
+                +12% em relação ao mês anterior
               </p>
             </CardContent>
           </Card>
@@ -105,9 +127,9 @@ const Index = () => {
               <Users className="h-4 w-4 text-purple-200" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">247</div>
               <p className="text-xs text-purple-200">
-                Nenhum usuário ativo
+                Across all companies
               </p>
             </CardContent>
           </Card>
@@ -120,9 +142,9 @@ const Index = () => {
               <TrendingUp className="h-4 w-4 text-orange-200" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0%</div>
+              <div className="text-2xl font-bold">+28%</div>
               <p className="text-xs text-orange-200">
-                Nenhuma empresa nova
+                Novas empresas este mês
               </p>
             </CardContent>
           </Card>

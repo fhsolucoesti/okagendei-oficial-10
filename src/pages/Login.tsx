@@ -168,7 +168,7 @@ const Login = () => {
                 <p><strong>Admin Geral:</strong> admin@okagendei.com</p>
                 <p><strong>Admin Empresa:</strong> empresa@teste.com</p>
                 <p><strong>Profissional:</strong> profissional@teste.com</p>
-                <p className="text-xs text-gray-500">Senha: 123456</p>
+                <p className="text-xs text-gray-500">Senha: qualquer valor</p>
               </div>
             </div>
           </CardContent>

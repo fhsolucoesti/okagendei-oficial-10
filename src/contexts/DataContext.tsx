@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode, useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { 
   Company, 
   Plan, 
@@ -12,7 +12,6 @@ import {
   Notification, 
   Invoice 
 } from '@/types';
-import { useSupabaseData } from '@/hooks/useSupabaseData';
 
 interface DataContextType {
   companies: Company[];
@@ -21,6 +20,7 @@ interface DataContextType {
   addCompany: (company: Omit<Company, 'id'>) => void;
   deleteCompany: (id: string) => void;
   
+  // Plans - Adicionando métodos CRUD para planos
   plans: Plan[];
   setPlans: (plans: Plan[]) => void;
   addPlan: (plan: Omit<Plan, 'id'>) => void;
@@ -69,7 +69,10 @@ interface DataContextType {
   invoices: Invoice[];
   setInvoices: (invoices: Invoice[]) => void;
 
+  // Nova função para inicializar dados da empresa
   initializeCompanyData: (companyId: string) => void;
+  
+  // Nova função para limpar duplicações
   removeDuplicateCompanies: () => void;
 }
 
@@ -88,106 +91,396 @@ interface DataProviderProps {
 }
 
 export const DataProvider = ({ children }: DataProviderProps) => {
-  // Use Supabase data hook
-  const supabaseData = useSupabaseData();
-
-  // Initialize empty data arrays for local development fallback
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-
-  // Clean functions for production
-  const clearLocalStorage = () => {
-    localStorage.removeItem('companies');
-    localStorage.removeItem('services');
-    localStorage.removeItem('professionals');
-    localStorage.removeItem('appointments');
-    localStorage.removeItem('clients');
-    localStorage.removeItem('landingPageConfigurations');
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+  // Função para remover duplicações baseado no email
+  const removeDuplicatesFromArray = (companies: Company[]) => {
+    const uniqueCompanies = [];
+    const seenEmails = new Set();
+    
+    for (const company of companies) {
+      if (!seenEmails.has(company.email)) {
+        seenEmails.add(company.email);
+        uniqueCompanies.push(company);
+      }
+    }
+    
+    return uniqueCompanies;
   };
 
+  // Carregar dados do localStorage se disponíveis, removendo duplicações
+  const [companies, setCompanies] = useState<Company[]>(() => {
+    const saved = localStorage.getItem('companies');
+    let companiesData = [];
+    
+    if (saved) {
+      try {
+        companiesData = JSON.parse(saved);
+      } catch (error) {
+        console.error('Error parsing companies from localStorage:', error);
+        companiesData = [];
+      }
+    }
+    
+    // Se não há dados salvos, criar apenas uma empresa de exemplo
+    if (companiesData.length === 0) {
+      companiesData = [
+        {
+          id: '1',
+          name: 'Empresa Exemplo',
+          email: 'empresa@exemplo.com',
+          phone: '(11) 99999-9999',
+          address: 'Rua Exemplo, 123',
+          plan: 'Profissional',
+          status: 'active',
+          employees: 5,
+          monthlyRevenue: 12500,
+          trialEndsAt: null,
+          createdAt: '2024-01-15T10:00:00Z',
+          customUrl: 'empresa-exemplo',
+          whatsappNumber: '11999999999'
+        }
+      ];
+    } else {
+      // Remover duplicações dos dados existentes
+      companiesData = removeDuplicatesFromArray(companiesData);
+    }
+    
+    return companiesData;
+  });
+
+  const [plans, setPlans] = useState<Plan[]>([
+    {
+      id: '1',
+      name: 'Básico',
+      maxEmployees: 2,
+      monthlyPrice: 29.90,
+      yearlyPrice: 299.00,
+      features: ['Agendamentos ilimitados', '1 usuário', 'Suporte por e-mail'],
+      isPopular: false,
+      isActive: true
+    },
+    {
+      id: '2',
+      name: 'Premium',
+      maxEmployees: 5,
+      monthlyPrice: 59.90,
+      yearlyPrice: 599.00,
+      features: ['Agendamentos ilimitados', 'Até 5 usuários', 'Suporte prioritário', 'Relatórios personalizados'],
+      isPopular: true,
+      isActive: true
+    },
+    {
+      id: '3',
+      name: 'Empresarial',
+      maxEmployees: 'unlimited',
+      monthlyPrice: 99.90,
+      yearlyPrice: 999.00,
+      features: ['Agendamentos ilimitados', 'Usuários ilimitados', 'Suporte VIP', 'Relatórios avançados', 'Integrações API'],
+      isPopular: false,
+      isActive: true
+    }
+  ]);
+
+  const [services, setServices] = useState<Service[]>(() => {
+    const saved = localStorage.getItem('services');
+    return saved ? JSON.parse(saved) : [
+      {
+        id: '1',
+        companyId: '1',
+        name: 'Corte de Cabelo',
+        description: 'Corte de cabelo masculino e feminino',
+        price: 50.00,
+        duration: 30,
+        isActive: true
+      },
+      {
+        id: '2',
+        companyId: '1',
+        name: 'Barba',
+        description: 'Barba simples',
+        price: 30.00,
+        duration: 20,
+        isActive: true
+      }
+    ];
+  });
+
+  const [professionals, setProfessionals] = useState<Professional[]>(() => {
+    const saved = localStorage.getItem('professionals');
+    return saved ? JSON.parse(saved) : [
+      {
+        id: '1',
+        companyId: '1',
+        userId: '3',
+        name: 'Carlos Barbeiro',
+        email: 'profissional@teste.com',
+        phone: '(11) 99999-9999',
+        specialties: ['Corte', 'Barba'],
+        commission: 0.5,
+        isActive: true,
+        workingHours: [
+          { dayOfWeek: 1, startTime: '09:00', endTime: '18:00', isAvailable: true },
+          { dayOfWeek: 2, startTime: '09:00', endTime: '18:00', isAvailable: true },
+          { dayOfWeek: 3, startTime: '09:00', endTime: '18:00', isAvailable: true },
+          { dayOfWeek: 4, startTime: '09:00', endTime: '18:00', isAvailable: true },
+          { dayOfWeek: 5, startTime: '09:00', endTime: '18:00', isAvailable: true },
+          { dayOfWeek: 6, startTime: '09:00', endTime: '13:00', isAvailable: true }
+        ]
+      }
+    ];
+  });
+
+  const [appointments, setAppointments] = useState<Appointment[]>([
+    {
+      id: '1',
+      companyId: '1',
+      professionalId: '1',
+      serviceId: '1',
+      clientName: 'Cliente Teste',
+      clientPhone: '(11) 99999-9999',
+      clientBirthDate: '1990-01-01',
+      date: '2024-01-20',
+      time: '10:00',
+      duration: 30,
+      price: 50.00,
+      status: 'scheduled',
+      createdAt: '2024-01-15T10:00:00Z'
+    }
+  ]);
+
+  const [clients, setClients] = useState<Client[]>([
+    {
+      id: '1',
+      companyId: '1',
+      name: 'Cliente Teste',
+      phone: '(11) 99999-9999',
+      birthDate: '1990-01-01',
+      totalAppointments: 1,
+      lastAppointment: '2024-01-20'
+    }
+  ]);
+
+  const [commissions, setCommissions] = useState<Commission[]>([
+    {
+      id: '1',
+      professionalId: '1',
+      appointmentId: '1',
+      amount: 25.00,
+      date: '2024-01-20',
+      status: 'pending'
+    }
+  ]);
+
+  const [expenses, setExpenses] = useState<Expense[]>([
+    {
+      id: '1',
+      companyId: '1',
+      description: 'Aluguel',
+      amount: 1000.00,
+      category: 'Aluguel',
+      date: '2024-01-15',
+      createdAt: '2024-01-15T10:00:00Z'
+    }
+  ]);
+
+  const [coupons, setCoupons] = useState<Coupon[]>([
+    {
+      id: '1',
+      companyId: '1',
+      code: 'DESCONTO10',
+      description: '10% de desconto',
+      type: 'percentage',
+      value: 10,
+      expiresAt: '2024-01-31',
+      isActive: true,
+      createdAt: '2024-01-15T10:00:00Z',
+      usedCount: 0
+    }
+  ]);
+
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      type: 'appointment',
+      title: 'Novo agendamento',
+      message: 'Cliente Teste agendou um novo serviço',
+      companyId: '1',
+      isRead: false,
+      createdAt: '2024-01-15T10:00:00Z',
+      priority: 'medium'
+    }
+  ]);
+
+  const [invoices, setInvoices] = useState<Invoice[]>([
+    {
+      id: '1',
+      companyId: '1',
+      amount: 59.90,
+      dueDate: '2024-01-31',
+      status: 'pending',
+      description: 'Mensalidade Plano Premium',
+      createdAt: '2024-01-15T10:00:00Z'
+    }
+  ]);
+
+  // Salvar dados no localStorage sempre que houver mudanças
+  useEffect(() => {
+    localStorage.setItem('companies', JSON.stringify(companies));
+  }, [companies]);
+
+  useEffect(() => {
+    localStorage.setItem('services', JSON.stringify(services));
+  }, [services]);
+
+  useEffect(() => {
+    localStorage.setItem('professionals', JSON.stringify(professionals));
+  }, [professionals]);
+
+  // Função para remover duplicações manualmente
   const removeDuplicateCompanies = () => {
-    console.log('Sistema limpo - não há mais dados duplicados');
+    console.log('Removendo empresas duplicadas...');
+    const uniqueCompanies = removeDuplicatesFromArray(companies);
+    if (uniqueCompanies.length !== companies.length) {
+      console.log(`Removidas ${companies.length - uniqueCompanies.length} empresas duplicadas`);
+      setCompanies(uniqueCompanies);
+    } else {
+      console.log('Nenhuma duplicação encontrada');
+    }
   };
 
   const initializeCompanyData = (companyId: string) => {
-    console.log('Dados da empresa serão carregados do Supabase:', companyId);
-    // This will be handled by Supabase hooks
+    console.log('Inicializando dados para empresa:', companyId);
+    
+    // Verificar se já existem dados para esta empresa
+    const hasServices = services.some(s => s.companyId === companyId);
+    const hasProfessionals = professionals.some(p => p.companyId === companyId);
+    
+    if (!hasServices) {
+      // Criar serviços padrão
+      const defaultServices: Service[] = [
+        {
+          id: `service_${Date.now()}_1`,
+          companyId,
+          name: 'Serviço Padrão',
+          description: 'Serviço inicial da empresa',
+          price: 50.00,
+          duration: 60,
+          isActive: true,
+          imageUrl: undefined
+        }
+      ];
+      
+      setServices(prev => [...prev, ...defaultServices]);
+      console.log('Serviços padrão criados para empresa:', companyId);
+    }
+    
+    // Não criar profissional automaticamente - será criado quando necessário
+    
+    console.log('Inicialização de dados concluída para empresa:', companyId);
   };
 
-  // Company CRUD operations using Supabase
-  const updateCompany = async (id: string, data: Partial<Company>) => {
-    // This will be handled by Supabase hooks
-    console.log('Company update will use Supabase:', id, data);
+  const updateCompany = (id: string, data: Partial<Company>) => {
+    setCompanies(prev => prev.map(company => 
+      company.id === id ? { ...company, ...data } : company
+    ));
   };
 
-  const addCompany = async (companyData: Omit<Company, 'id'>) => {
-    return supabaseData.createCompany(companyData);
+  const addCompany = (companyData: Omit<Company, 'id'>) => {
+    const newCompany = {
+      ...companyData,
+      id: Date.now().toString()
+    };
+    setCompanies(prev => [...prev, newCompany]);
+    // Inicializar dados básicos para a nova empresa
+    setTimeout(() => initializeCompanyData(newCompany.id), 100);
   };
 
   const deleteCompany = (id: string) => {
-    // This will be handled by Supabase hooks
-    console.log('Company deletion will use Supabase:', id);
+    setCompanies(prev => prev.filter(company => company.id !== id));
   };
 
-  // Plan methods (read-only from Supabase)
+  // Plan CRUD methods - Implementando corretamente os métodos de planos
   const addPlan = (planData: Omit<Plan, 'id'>) => {
-    console.log('Plan creation requires super admin access');
+    const newPlan = {
+      ...planData,
+      id: (Date.now() + Math.random()).toString(),
+      isActive: true
+    };
+    setPlans(prev => [...prev, newPlan]);
   };
 
   const updatePlan = (id: string, data: Partial<Plan>) => {
-    console.log('Plan updates require super admin access:', id, data);
+    console.log('Updating plan:', id, data);
+    setPlans(prev => prev.map(plan => 
+      plan.id === id ? { ...plan, ...data } : plan
+    ));
   };
 
   const deletePlan = (id: string) => {
-    console.log('Plan deletion requires super admin access:', id);
+    setPlans(prev => prev.filter(plan => plan.id !== id));
   };
 
-  // Service operations (will use Supabase)
   const addService = (serviceData: Omit<Service, 'id'>) => {
-    console.log('Service creation will use Supabase:', serviceData);
+    const newService = {
+      ...serviceData,
+      id: Date.now().toString()
+    };
+    setServices(prev => [...prev, newService]);
   };
 
   const updateService = (id: string, data: Partial<Service>) => {
-    console.log('Service update will use Supabase:', id, data);
+    setServices(prev => prev.map(service => 
+      service.id === id ? { ...service, ...data } : service
+    ));
   };
 
   const deleteService = (id: string) => {
-    console.log('Service deletion will use Supabase:', id);
+    setServices(prev => prev.filter(service => service.id !== id));
   };
 
-  // Professional operations (will use Supabase)
   const addProfessional = (professionalData: Omit<Professional, 'id'>) => {
-    console.log('Professional creation will use Supabase:', professionalData);
+    const newProfessional = {
+      ...professionalData,
+      id: Date.now().toString()
+    };
+    setProfessionals(prev => [...prev, newProfessional]);
   };
 
   const updateProfessional = (id: string, data: Partial<Professional>) => {
-    console.log('Professional update will use Supabase:', id, data);
+    setProfessionals(prev => prev.map(professional => 
+      professional.id === id ? { ...professional, ...data } : professional
+    ));
   };
 
   const deleteProfessional = (id: string) => {
-    console.log('Professional deletion will use Supabase:', id);
+    setProfessionals(prev => prev.filter(professional => professional.id !== id));
   };
 
-  // Appointment operations (will use Supabase)
   const addAppointment = (appointmentData: Omit<Appointment, 'id'>) => {
-    console.log('Appointment creation will use Supabase:', appointmentData);
+    const newAppointment = {
+      ...appointmentData,
+      id: Date.now().toString()
+    };
+    setAppointments(prev => [...prev, newAppointment]);
   };
 
   const updateAppointment = (id: string, data: Partial<Appointment>) => {
-    console.log('Appointment update will use Supabase:', id, data);
+    setAppointments(prev => prev.map(appointment => 
+      appointment.id === id ? { ...appointment, ...data } : appointment
+    ));
   };
 
   const deleteAppointment = (id: string) => {
-    console.log('Appointment deletion will use Supabase:', id);
+    setAppointments(prev => prev.filter(appointment => appointment.id !== id));
   };
 
-  // Expense operations (will use Supabase)
   const addExpense = (expenseData: Omit<Expense, 'id'>) => {
-    console.log('Expense creation will use Supabase:', expenseData);
+    const newExpense = {
+      ...expenseData,
+      id: Date.now().toString()
+    };
+    setExpenses(prev => [...prev, newExpense]);
   };
 
-  // Coupon operations (local only for now)
   const addCoupon = (couponData: Omit<Coupon, 'id'>) => {
     const newCoupon = {
       ...couponData,
@@ -206,72 +499,65 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     setCoupons(prev => prev.filter(coupon => coupon.id !== id));
   };
 
-  // Notification operations (will use Supabase)
   const addNotification = (notificationData: Omit<Notification, 'id'>) => {
-    console.log('Notification creation will use Supabase:', notificationData);
+    const newNotification = {
+      ...notificationData,
+      id: Date.now().toString()
+    };
+    setNotifications(prev => [...prev, newNotification]);
   };
 
   const markNotificationAsRead = (id: string) => {
-    console.log('Notification update will use Supabase:', id);
+    setNotifications(prev => prev.map(notification => 
+      notification.id === id ? { ...notification, isRead: true } : notification
+    ));
   };
 
   return (
     <DataContext.Provider value={{
-      // Use Supabase data where available, empty arrays as fallback
-      companies: supabaseData.companies,
-      setCompanies: () => console.log('Use Supabase for company updates'),
+      companies,
+      setCompanies,
       updateCompany,
       addCompany,
       deleteCompany,
-      
-      plans: supabaseData.plans,
-      setPlans: () => console.log('Plans are managed through Supabase'),
+      plans,
+      setPlans,
       addPlan,
       updatePlan,
       deletePlan,
-      
-      services: supabaseData.services,
-      setServices: () => console.log('Use Supabase for service updates'),
+      services,
+      setServices,
       addService,
       updateService,
       deleteService,
-      
-      professionals: supabaseData.professionals,
-      setProfessionals: () => console.log('Use Supabase for professional updates'),
+      professionals,
+      setProfessionals,
       addProfessional,
       updateProfessional,
       deleteProfessional,
-      
-      appointments: supabaseData.appointments,
-      setAppointments: () => console.log('Use Supabase for appointment updates'),
+      appointments,
+      setAppointments,
       addAppointment,
       updateAppointment,
       deleteAppointment,
-      
-      clients: supabaseData.clients,
-      setClients: () => console.log('Use Supabase for client updates'),
-      
-      commissions: supabaseData.commissions,
-      setCommissions: () => console.log('Use Supabase for commission updates'),
-      
-      expenses: supabaseData.expenses,
-      setExpenses: () => console.log('Use Supabase for expense updates'),
+      clients,
+      setClients,
+      commissions,
+      setCommissions,
+      expenses,
+      setExpenses,
       addExpense,
-      
       coupons,
       setCoupons,
       addCoupon,
       updateCoupon,
       deleteCoupon,
-      
-      notifications: supabaseData.notifications,
-      setNotifications: () => console.log('Use Supabase for notification updates'),
+      notifications,
+      setNotifications,
       addNotification,
       markNotificationAsRead,
-      
-      invoices: supabaseData.invoices,
-      setInvoices: () => console.log('Use Supabase for invoice updates'),
-
+      invoices,
+      setInvoices,
       initializeCompanyData,
       removeDuplicateCompanies
     }}>
