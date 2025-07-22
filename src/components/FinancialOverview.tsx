@@ -7,34 +7,13 @@ import { DollarSign, TrendingUp, TrendingDown, Download, CreditCard, Calendar, A
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 const FinancialOverview = () => {
-  const monthlyRevenueData = [
-    { month: 'Jan', revenue: 12500, companies: 15 },
-    { month: 'Fev', revenue: 15800, companies: 18 },
-    { month: 'Mar', revenue: 18200, companies: 22 },
-    { month: 'Abr', revenue: 21500, companies: 25 },
-    { month: 'Mai', revenue: 24800, companies: 28 },
-    { month: 'Jun', revenue: 26200, companies: 31 },
-    { month: 'Jul', revenue: 28500, companies: 34 },
-  ];
+  const monthlyRevenueData: Array<{ month: string; revenue: number; companies: number }> = [];
 
-  const planDistribution = [
-    { name: 'Básico', value: 45, color: '#3B82F6' },
-    { name: 'Profissional', value: 38, color: '#8B5CF6' },
-    { name: 'Empresarial', value: 17, color: '#F59E0B' },
-  ];
+  const planDistribution: Array<{ name: string; value: number; color: string }> = [];
 
-  const overdueBills = [
-    { company: 'Barbearia Central', amount: 109.90, daysOverdue: 5, plan: 'Profissional' },
-    { company: 'Studio Nails Express', amount: 59.90, daysOverdue: 12, plan: 'Básico' },
-    { company: 'Clínica Beauty Care', amount: 249.90, daysOverdue: 3, plan: 'Empresarial' },
-  ];
+  const overdueBills: Array<{ company: string; amount: number; daysOverdue: number; plan: string }> = [];
 
-  const recentPayments = [
-    { company: 'Barbearia do João', amount: 109.90, date: '2024-07-01', status: 'paid', plan: 'Profissional' },
-    { company: 'Studio Bella Nails', amount: 59.90, date: '2024-07-01', status: 'paid', plan: 'Básico' },
-    { company: 'Clínica Renovar', amount: 249.90, date: '2024-06-30', status: 'paid', plan: 'Empresarial' },
-    { company: 'Salão Glamour', amount: 109.90, date: '2024-06-29', status: 'paid', plan: 'Profissional' },
-  ];
+  const recentPayments: Array<{ company: string; amount: number; date: string; status: string; plan: string }> = [];
 
   return (
     <div className="space-y-6">
@@ -46,10 +25,10 @@ const FinancialOverview = () => {
             <DollarSign className="h-4 w-4 text-green-200" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ 28.500</div>
+            <div className="text-2xl font-bold">R$ 0</div>
             <div className="flex items-center space-x-1 text-green-200">
               <TrendingUp className="h-3 w-3" />
-              <span className="text-xs">+8.7% vs mês anterior</span>
+              <span className="text-xs">Sem dados</span>
             </div>
           </CardContent>
         </Card>
@@ -60,10 +39,10 @@ const FinancialOverview = () => {
             <TrendingUp className="h-4 w-4 text-blue-200" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ 342.000</div>
+            <div className="text-2xl font-bold">R$ 0</div>
             <div className="flex items-center space-x-1 text-blue-200">
               <TrendingUp className="h-3 w-3" />
-              <span className="text-xs">+12.3% vs ano anterior</span>
+              <span className="text-xs">Sem dados</span>
             </div>
           </CardContent>
         </Card>
@@ -74,10 +53,10 @@ const FinancialOverview = () => {
             <CreditCard className="h-4 w-4 text-orange-200" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ 3.240</div>
+            <div className="text-2xl font-bold">R$ 0</div>
             <div className="flex items-center space-x-1 text-orange-200">
               <AlertCircle className="h-3 w-3" />
-              <span className="text-xs">3 faturas em atraso</span>
+              <span className="text-xs">Nenhuma fatura em atraso</span>
             </div>
           </CardContent>
         </Card>
@@ -88,10 +67,10 @@ const FinancialOverview = () => {
             <TrendingDown className="h-4 w-4 text-purple-200" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2.1%</div>
+            <div className="text-2xl font-bold">0%</div>
             <div className="flex items-center space-x-1 text-purple-200">
               <TrendingDown className="h-3 w-3" />
-              <span className="text-xs">-0.5% vs mês anterior</span>
+              <span className="text-xs">Sem dados</span>
             </div>
           </CardContent>
         </Card>
@@ -180,11 +159,7 @@ const FinancialOverview = () => {
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
-                      { plan: 'Básico', revenue: 8500 },
-                      { plan: 'Profissional', revenue: 12500 },
-                      { plan: 'Empresarial', revenue: 7500 },
-                    ]}>
+                     <BarChart data={[]}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="plan" />
                       <YAxis />
