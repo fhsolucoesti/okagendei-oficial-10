@@ -44,7 +44,24 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const supabaseAuth = useSupabaseAuth();
+  console.log('🔄 AuthProvider rendering...');
+  
+  let supabaseAuth;
+  try {
+    supabaseAuth = useSupabaseAuth();
+    console.log('✅ useSupabaseAuth successful:', !!supabaseAuth);
+  } catch (error) {
+    console.error('❌ Error in useSupabaseAuth:', error);
+    // Provide a fallback auth state
+    supabaseAuth = {
+      user: null,
+      loading: false,
+      signIn: async () => ({ success: false, error: 'Auth not available' }),
+      signUp: async () => ({ success: false, error: 'Auth not available' }),
+      signOut: async () => {},
+      isAuthenticated: false
+    };
+  }
 
   // Legacy compatibility methods
   const login = async (email: string, password: string): Promise<boolean> => {

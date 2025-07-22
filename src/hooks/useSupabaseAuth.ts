@@ -17,7 +17,15 @@ interface AuthUser {
 export const useSupabaseAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  
+  let navigate;
+  try {
+    navigate = useNavigate();
+    console.log('✅ useNavigate successful');
+  } catch (error) {
+    console.error('❌ Error with useNavigate:', error);
+    navigate = () => console.log('Navigation not available');
+  }
 
   // Get user role from database
   const getUserRole = async (userId: string): Promise<AuthUser['role']> => {
@@ -44,19 +52,23 @@ export const useSupabaseAuth = () => {
   const redirectUser = (userRole: AuthUser['role']) => {
     console.log('🔄 Redirecting user based on role:', userRole);
     
-    switch (userRole) {
-      case 'super_admin':
-        navigate('/admin', { replace: true });
-        break;
-      case 'company_admin':
-        navigate('/empresa', { replace: true });
-        break;
-      case 'professional':
-        navigate('/profissional', { replace: true });
-        break;
-      default:
-        console.warn('⚠️ Unknown role, redirecting to login');
-        navigate('/login', { replace: true });
+    try {
+      switch (userRole) {
+        case 'super_admin':
+          navigate('/admin', { replace: true });
+          break;
+        case 'company_admin':
+          navigate('/empresa', { replace: true });
+          break;
+        case 'professional':
+          navigate('/profissional', { replace: true });
+          break;
+        default:
+          console.warn('⚠️ Unknown role, redirecting to login');
+          navigate('/login', { replace: true });
+      }
+    } catch (error) {
+      console.error('❌ Navigation error:', error);
     }
   };
 
@@ -231,7 +243,12 @@ export const useSupabaseAuth = () => {
       setLoading(true);
       await supabase.auth.signOut();
       setUser(null);
-      navigate('/login');
+      try {
+        navigate('/login');
+      } catch (navError) {
+        console.error('❌ Navigation error in signOut:', navError);
+        window.location.pathname = '/login';
+      }
     } catch (error) {
       console.error('Error signing out:', error);
     } finally {
