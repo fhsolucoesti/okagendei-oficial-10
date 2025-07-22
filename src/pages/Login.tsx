@@ -30,7 +30,7 @@ const Login = () => {
     backgroundColor: '#f8fafc',
     backgroundImage: ''
   });
-  const { signIn, user, authError, forceLogout } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   // Carregar configurações de personalização
@@ -41,57 +41,25 @@ const Login = () => {
     }
   }, []);
 
-  // Redirecionamento é gerenciado automaticamente pelo useSupabaseAuth
-  // Apenas log para debug
-  useEffect(() => {
-    if (user) {
-      console.log('🔄 User detected in Login page, useSupabaseAuth should handle redirection:', user.role);
-    }
-  }, [user]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      toast.error('Por favor, preencha todos os campos');
-      return;
-    }
-
     setIsLoading(true);
-    console.log('🚀 Login attempt for:', email);
 
     try {
-      const result = await signIn(email, password);
+      const success = await login(email, password);
       
-      if (result.success) {
-        console.log('✅ Login successful, waiting for automatic redirection...');
-        toast.success('Login realizado com sucesso! Redirecionando...');
-        
-        // Timeout de segurança para garantir redirecionamento
-        setTimeout(() => {
-          if (window.location.pathname === '/login') {
-            console.log('⚠️ Still on login page after 3s, forcing redirection');
-            window.location.reload();
-          }
-        }, 3000);
-        
+      if (success) {
+        toast.success('Login realizado com sucesso!');
+        // O redirecionamento será feito automaticamente pelo useEffect no AuthContext
+        // ou podemos buscar o usuário atual e redirecionar baseado no role
       } else {
-        console.error('❌ Login failed:', result.error);
-        toast.error(result.error || 'Erro ao fazer login. Verifique suas credenciais.');
-        setIsLoading(false);
+        toast.error('Erro ao fazer login. Verifique suas credenciais.');
       }
-    } catch (error: any) {
-      console.error('❌ Login error:', error);
+    } catch (error) {
       toast.error('Erro ao fazer login. Verifique suas credenciais.');
+    } finally {
       setIsLoading(false);
     }
-    // Não resetar isLoading no finally para login bem-sucedido
-    // O loading será resetado automaticamente após o redirecionamento
-  };
-
-  const handleForceLogout = () => {
-    console.log('🔄 Force logout from login page');
-    forceLogout();
   };
 
   const backgroundStyle = config.backgroundType === 'image' && config.backgroundImage
@@ -148,18 +116,6 @@ const Login = () => {
             <CardDescription>
               Entre com suas credenciais para acessar o sistema
             </CardDescription>
-            {authError && (
-              <div className="bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
-                <p className="font-medium">Erro de autenticação:</p>
-                <p>{authError}</p>
-                <button 
-                  onClick={handleForceLogout}
-                  className="mt-2 text-xs underline hover:no-underline"
-                >
-                  Limpar sessão e tentar novamente
-                </button>
-              </div>
-            )}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -172,7 +128,6 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  disabled={isLoading}
                 />
               </div>
               
@@ -185,7 +140,6 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  disabled={isLoading}
                 />
               </div>
 

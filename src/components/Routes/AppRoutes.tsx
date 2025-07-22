@@ -43,15 +43,7 @@ const AppRoutes = () => {
       <Route path="/home" element={<LandingPage />} />
       
       {/* Rota pública de login */}
-      <Route path="/login" element={
-        user ? (
-          <Navigate to={
-            user.role === 'super_admin' ? '/admin' : 
-            user.role === 'company_admin' ? '/empresa' : 
-            '/profissional'
-          } replace />
-        ) : <Login />
-      } />
+      <Route path="/login" element={user ? <Navigate to={user.role === 'super_admin' ? '/admin' : user.role === 'company_admin' ? '/empresa' : '/profissional'} replace /> : <Login />} />
       
       {/* Página pública de agendamento */}
       <Route path="/agendar/:companyUrl" element={<BookingPage />} />

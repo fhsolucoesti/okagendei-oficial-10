@@ -13,8 +13,6 @@ interface AuthContextType {
   signOut: () => void;
   isAuthenticated: boolean;
   loading: boolean;
-  authError: string | null;
-  forceLogout: () => void;
   // Legacy methods for compatibility
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
@@ -46,32 +44,11 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  console.log('🔄 AuthProvider rendering...');
-  
-  let supabaseAuth;
-  try {
-    supabaseAuth = useSupabaseAuth();
-    console.log('✅ useSupabaseAuth successful:', !!supabaseAuth);
-  } catch (error) {
-    console.error('❌ Error in useSupabaseAuth:', error);
-    // Provide a fallback auth state
-    supabaseAuth = {
-      user: null,
-      loading: false,
-      authError: 'Auth not available',
-      signIn: async () => ({ success: false, error: 'Auth not available' }),
-      signUp: async () => ({ success: false, error: 'Auth not available' }),
-      signOut: async () => {},
-      forceLogout: async () => {},
-      isAuthenticated: false
-    };
-  }
+  const supabaseAuth = useSupabaseAuth();
 
   // Legacy compatibility methods
   const login = async (email: string, password: string): Promise<boolean> => {
-    console.log('🔄 Legacy login method called for:', email);
     const result = await supabaseAuth.signIn(email, password);
-    console.log('🔄 Legacy login result:', result.success);
     return result.success;
   };
 
@@ -109,8 +86,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       signOut: supabaseAuth.signOut,
       isAuthenticated: supabaseAuth.isAuthenticated,
       loading: supabaseAuth.loading,
-      authError: supabaseAuth.authError,
-      forceLogout: supabaseAuth.forceLogout,
       
       // Legacy compatibility
       login,
