@@ -28,8 +28,10 @@ export const useSupabaseAuth = () => {
   }
 
   // Get user role from database
-  const getUserRole = async (userId: string): Promise<AuthUser['role']> => {
+  const getUserData = async (userId: string): Promise<AuthUser | null> => {
     try {
+      console.log('🔍 Fetching user data for ID:', userId);
+      
       const { data, error } = await supabase
         .from('users')
         .select('role, name, company_id, avatar, must_change_password')
@@ -37,31 +39,68 @@ export const useSupabaseAuth = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching user role:', error);
-        return 'professional';
+        console.error('❌ Error fetching user data:', error);
+        return null;
       }
 
-      return data.role || 'professional';
+      if (!data) {
+        console.error('❌ No user data found for ID:', userId);
+        return null;
+      }
+
+      console.log('✅ User data fetched successfully:', {
+        role: data.role,
+        name: data.name,
+        companyId: data.company_id
+      });
+
+      return {
+        id: userId,
+        email: '', // Will be filled from Supabase user
+        name: data.name || '',
+        role: data.role || 'professional',
+        companyId: data.company_id || undefined,
+        avatar: data.avatar || undefined,
+        mustChangePassword: data.must_change_password || false
+      };
     } catch (error) {
-      console.error('Error getting user role:', error);
-      return 'professional';
+      console.error('❌ Exception in getUserData:', error);
+      return null;
     }
   };
 
   // Redirect user based on role
   const redirectUser = (userRole: AuthUser['role']) => {
-    console.log('🔄 Redirecting user based on role:', userRole);
+    console.log('🚀 Redirecting user based on role:', userRole);
     
     try {
+      const currentPath = window.location.pathname;
+      console.log('📍 Current path before redirect:', currentPath);
+      
       switch (userRole) {
         case 'super_admin':
-          navigate('/admin', { replace: true });
+          if (currentPath !== '/admin') {
+            console.log('🎯 Redirecting to /admin');
+            navigate('/admin', { replace: true });
+          } else {
+            console.log('✅ Already on correct path: /admin');
+          }
           break;
         case 'company_admin':
-          navigate('/empresa', { replace: true });
+          if (currentPath !== '/empresa') {
+            console.log('🎯 Redirecting to /empresa');
+            navigate('/empresa', { replace: true });
+          } else {
+            console.log('✅ Already on correct path: /empresa');
+          }
           break;
         case 'professional':
-          navigate('/profissional', { replace: true });
+          if (currentPath !== '/profissional') {
+            console.log('🎯 Redirecting to /profissional');
+            navigate('/profissional', { replace: true });
+          } else {
+            console.log('✅ Already on correct path: /profissional');
+          }
           break;
         default:
           console.warn('⚠️ Unknown role, redirecting to login');
@@ -69,6 +108,71 @@ export const useSupabaseAuth = () => {
       }
     } catch (error) {
       console.error('❌ Navigation error:', error);
+      // Fallback para redirecionamento manual
+      const targetPath = userRole === 'super_admin' ? '/admin' :
+                        userRole === 'company_admin' ? '/empresa' :
+                        userRole === 'professional' ? '/profissional' : '/login';
+      window.location.href = targetPath;
+    }
+  };
+
+  // Handle authenticated user
+  const handleAuthUser = async (supabaseUser: User) => {
+    try {
+      console.log('🔄 Starting handleAuthUser for:', supabaseUser.email);
+      console.log('📍 Current location:', window.location.pathname);
+      
+      // Get user details from our users table
+      const userData = await getUserData(supabaseUser.id);
+      
+      if (!userData) {
+        console.error('❌ Failed to get user data, setting loading to false');
+        setLoading(false);
+        return;
+      }
+
+      // Complete the user object with email from Supabase
+      const authUser: AuthUser = {
+        ...userData,
+        email: supabaseUser.email || ''
+      };
+
+      console.log('✅ User authenticated successfully:', { 
+        email: authUser.email, 
+        role: authUser.role,
+        name: authUser.name,
+        currentPath: window.location.pathname
+      });
+      
+      // Set user in state
+      setUser(authUser);
+      
+      // Always try to redirect to correct dashboard
+      const currentPath = window.location.pathname;
+      console.log('🎯 Checking redirection for path:', currentPath);
+      
+      // Only redirect if on login page, home page, or wrong dashboard
+      const shouldRedirect = currentPath === '/login' || 
+                           currentPath === '/' || 
+                           currentPath === '/home' ||
+                           (authUser.role === 'super_admin' && currentPath !== '/admin') ||
+                           (authUser.role === 'company_admin' && currentPath !== '/empresa') ||
+                           (authUser.role === 'professional' && currentPath !== '/profissional');
+      
+      if (shouldRedirect) {
+        console.log('🚀 Redirection needed for role:', authUser.role);
+        redirectUser(authUser.role);
+      } else {
+        console.log('✅ User already on correct dashboard, no redirect needed');
+      }
+      
+      // IMPORTANT: Always set loading to false after processing
+      console.log('✅ Setting loading to false - user processing complete');
+      setLoading(false);
+      
+    } catch (error) {
+      console.error('❌ Error in handleAuthUser:', error);
+      setLoading(false);
     }
   };
 
@@ -76,116 +180,70 @@ export const useSupabaseAuth = () => {
   useEffect(() => {
     console.log('🚀 Initializing auth...');
     
-    // Listen for auth changes FIRST
+    let timeoutId: NodeJS.Timeout;
+    
+    // Safety timeout to prevent infinite loading
+    const safetyTimeout = setTimeout(() => {
+      console.warn('⚠️ Auth initialization timeout reached, forcing loading = false');
+      setLoading(false);
+    }, 15000); // 15 seconds timeout
+    
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Auth state change:', event, session ? 'Session exists' : 'No session');
-        console.log('📋 Session details:', session ? {
-          user: session.user?.email,
-          expires: session.expires_at,
-          token: !!session.access_token
-        } : 'null');
+        
+        clearTimeout(safetyTimeout);
         
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('✅ SIGNED_IN event detected, calling handleAuthUser');
+          console.log('✅ SIGNED_IN event - processing user');
           await handleAuthUser(session.user);
         } else if (event === 'SIGNED_OUT') {
           console.log('👋 User signed out');
           setUser(null);
-        } else if (event === 'INITIAL_SESSION' && session?.user) {
-          console.log('🔄 Initial session found, calling handleAuthUser');
-          await handleAuthUser(session.user);
+          setLoading(false);
+        } else if (event === 'INITIAL_SESSION') {
+          if (session?.user) {
+            console.log('🔄 Initial session found - processing user');
+            await handleAuthUser(session.user);
+          } else {
+            console.log('❌ No initial session found');
+            setLoading(false);
+          }
+        } else {
+          console.log('ℹ️ Other auth event:', event);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     const initializeAuth = async () => {
       try {
+        console.log('📊 Checking for existing session...');
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('📊 Initial session check:', session ? 'Session found' : 'No session');
+        console.log('📊 Session check result:', session ? 'Session found' : 'No session');
         
         if (session?.user) {
-          console.log('🔄 Existing session found, calling handleAuthUser');
+          console.log('🔄 Existing session found - processing user');
           await handleAuthUser(session.user);
         } else {
-          console.log('❌ No user in session, setting loading to false');
+          console.log('❌ No existing session');
           setLoading(false);
         }
       } catch (error) {
-        console.error('❌ Error initializing auth:', error);
+        console.error('❌ Error checking session:', error);
         setLoading(false);
       }
     };
 
     initializeAuth();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
   }, []);
-
-  const handleAuthUser = async (supabaseUser: User) => {
-    try {
-      console.log('🔄 Handling auth user:', supabaseUser.email);
-      console.log('📍 Current location:', window.location.pathname);
-      
-      // Get user details from our users table
-      const { data, error } = await supabase
-        .from('users')
-        .select('role, name, company_id, avatar, must_change_password')
-        .eq('id', supabaseUser.id)
-        .single();
-
-      if (error) {
-        console.error('❌ Error fetching user details:', error);
-        return;
-      }
-
-      const authUser: AuthUser = {
-        id: supabaseUser.id,
-        email: supabaseUser.email || '',
-        name: data?.name || '',
-        role: data?.role || 'professional',
-        companyId: data?.company_id || undefined,
-        avatar: data?.avatar || undefined,
-        mustChangePassword: data?.must_change_password || false
-      };
-
-      console.log('✅ User authenticated successfully:', { 
-        email: authUser.email, 
-        role: authUser.role,
-        currentPath: window.location.pathname
-      });
-      
-      setUser(authUser);
-      
-      // Always redirect after login - remove the isDashboardPage check that was preventing redirection
-      const currentPath = window.location.pathname;
-      console.log('🎯 Checking if redirection is needed from:', currentPath);
-      
-      if (currentPath === '/login' || currentPath === '/' || currentPath === '/home') {
-        console.log('🚀 Redirecting from login/home to dashboard for role:', authUser.role);
-        redirectUser(authUser.role);
-        
-        // Fallback redirecionamento manual após 2 segundos
-        setTimeout(() => {
-          const stillOnSamePage = window.location.pathname === currentPath;
-          if (stillOnSamePage) {
-            console.log('⚠️ Auto-redirect failed, forcing manual redirect');
-            const targetPath = authUser.role === 'super_admin' ? '/admin' :
-                             authUser.role === 'company_admin' ? '/empresa' :
-                             '/profissional';
-            window.location.href = targetPath;
-          }
-        }, 2000);
-      } else {
-        console.log('✅ User already on correct dashboard, no redirect needed');
-      }
-    } catch (error) {
-      console.error('❌ Error handling auth user:', error);
-    }
-  };
 
   const signUp = async (email: string, password: string, userData: {
     name: string;
@@ -194,15 +252,21 @@ export const useSupabaseAuth = () => {
   }) => {
     try {
       setLoading(true);
+      console.log('📝 Starting signUp for:', email);
       
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ SignUp error:', error);
+        throw error;
+      }
 
       if (data.user) {
+        console.log('✅ SignUp successful, creating user record');
+        
         // Create user record in our users table
         const { error: userError } = await supabase
           .from('users')
@@ -211,10 +275,13 @@ export const useSupabaseAuth = () => {
             name: userData.name,
             email: email,
             role: userData.role || 'professional',
-            password: 'supabase_managed' // Placeholder since Supabase manages passwords
+            password: 'supabase_managed'
           });
 
-        if (userError) throw userError;
+        if (userError) {
+          console.error('❌ Error creating user record:', userError);
+          throw userError;
+        }
 
         // If creating a company admin, create the company
         if (userData.role === 'company_admin' && userData.companyName) {
@@ -228,7 +295,10 @@ export const useSupabaseAuth = () => {
               status: 'trial'
             });
 
-          if (companyError) throw companyError;
+          if (companyError) {
+            console.error('❌ Error creating company:', companyError);
+            throw companyError;
+          }
         }
 
         return { success: true, user: data.user };
@@ -236,7 +306,7 @@ export const useSupabaseAuth = () => {
 
       return { success: false, error: 'Failed to create user' };
     } catch (error: any) {
-      console.error('Error signing up:', error);
+      console.error('❌ SignUp failed:', error);
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -246,7 +316,7 @@ export const useSupabaseAuth = () => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      console.log('🔐 Starting signIn process for:', email);
+      console.log('🔐 Starting signIn for:', email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -255,20 +325,20 @@ export const useSupabaseAuth = () => {
 
       if (error) {
         console.error('❌ SignIn error:', error);
-        setLoading(false); // Reset loading on error
+        setLoading(false);
         throw error;
       }
 
-      console.log('✅ SignIn successful:', data.user?.email);
+      console.log('✅ SignIn successful for:', data.user?.email);
       console.log('🔗 Session created:', !!data.session);
       
-      // Don't set loading to false here - let onAuthStateChange handle it
-      // after the user is properly authenticated and redirected
+      // Don't set loading to false here - handleAuthUser will do it
+      // after processing the user data
       
       return { success: true, user: data.user };
     } catch (error: any) {
-      console.error('Error signing in:', error);
-      setLoading(false); // Only reset on error
+      console.error('❌ SignIn failed:', error);
+      setLoading(false);
       return { success: false, error: error.message };
     }
   };
@@ -276,8 +346,11 @@ export const useSupabaseAuth = () => {
   const signOut = async () => {
     try {
       setLoading(true);
+      console.log('👋 Starting signOut');
+      
       await supabase.auth.signOut();
       setUser(null);
+      
       try {
         navigate('/login');
       } catch (navError) {
@@ -285,7 +358,7 @@ export const useSupabaseAuth = () => {
         window.location.pathname = '/login';
       }
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('❌ SignOut error:', error);
     } finally {
       setLoading(false);
     }
