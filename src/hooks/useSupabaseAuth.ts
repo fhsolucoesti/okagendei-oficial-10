@@ -180,13 +180,11 @@ export const useSupabaseAuth = () => {
   useEffect(() => {
     console.log('🚀 Initializing auth...');
     
-    let timeoutId: NodeJS.Timeout;
-    
     // Safety timeout to prevent infinite loading
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Auth initialization timeout reached, forcing loading = false');
       setLoading(false);
-    }, 15000); // 15 seconds timeout
+    }, 10000); // 10 seconds timeout
     
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -196,7 +194,7 @@ export const useSupabaseAuth = () => {
         clearTimeout(safetyTimeout);
         
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('✅ SIGNED_IN event - processing user');
+          console.log('✅ SIGNED_IN event detected, calling handleAuthUser');
           await handleAuthUser(session.user);
         } else if (event === 'SIGNED_OUT') {
           console.log('👋 User signed out');
@@ -204,10 +202,10 @@ export const useSupabaseAuth = () => {
           setLoading(false);
         } else if (event === 'INITIAL_SESSION') {
           if (session?.user) {
-            console.log('🔄 Initial session found - processing user');
+            console.log('🔄 Initial session found, processing user');
             await handleAuthUser(session.user);
           } else {
-            console.log('❌ No initial session found');
+            console.log('📊 Initial session check: No session');
             setLoading(false);
           }
         } else {
@@ -216,28 +214,6 @@ export const useSupabaseAuth = () => {
         }
       }
     );
-
-    // Check for existing session
-    const initializeAuth = async () => {
-      try {
-        console.log('📊 Checking for existing session...');
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('📊 Session check result:', session ? 'Session found' : 'No session');
-        
-        if (session?.user) {
-          console.log('🔄 Existing session found - processing user');
-          await handleAuthUser(session.user);
-        } else {
-          console.log('❌ No existing session');
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('❌ Error checking session:', error);
-        setLoading(false);
-      }
-    };
-
-    initializeAuth();
 
     return () => {
       subscription.unsubscribe();
