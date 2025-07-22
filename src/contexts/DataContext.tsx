@@ -21,7 +21,6 @@ interface DataContextType {
   addCompany: (company: Omit<Company, 'id'>) => void;
   deleteCompany: (id: string) => void;
   
-  // Plans - Adicionando métodos CRUD para planos
   plans: Plan[];
   setPlans: (plans: Plan[]) => void;
   addPlan: (plan: Omit<Plan, 'id'>) => void;
@@ -70,10 +69,7 @@ interface DataContextType {
   invoices: Invoice[];
   setInvoices: (invoices: Invoice[]) => void;
 
-  // Nova função para inicializar dados da empresa
   initializeCompanyData: (companyId: string) => void;
-  
-  // Nova função para limpar duplicações
   removeDuplicateCompanies: () => void;
 }
 
