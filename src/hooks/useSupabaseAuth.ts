@@ -41,15 +41,20 @@ export const useSupabaseAuth = () => {
 
   // Initialize auth state
   useEffect(() => {
+    console.log('🚀 Initializing auth...');
+    
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        console.log('📊 Initial session check:', session ? 'Session found' : 'No session');
         
         if (session?.user) {
           await handleAuthUser(session.user);
+        } else {
+          console.log('❌ No user in session, setting loading to false');
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('❌ Error initializing auth:', error);
       } finally {
         setLoading(false);
       }
@@ -60,9 +65,12 @@ export const useSupabaseAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 Auth state change:', event, session ? 'Session exists' : 'No session');
+        
         if (event === 'SIGNED_IN' && session?.user) {
           await handleAuthUser(session.user);
         } else if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out');
           setUser(null);
         }
         setLoading(false);
@@ -74,6 +82,8 @@ export const useSupabaseAuth = () => {
 
   const handleAuthUser = async (supabaseUser: User) => {
     try {
+      console.log('🔄 Handling auth user:', supabaseUser.email);
+      
       // Get user details from our users table
       const { data, error } = await supabase
         .from('users')
@@ -82,7 +92,7 @@ export const useSupabaseAuth = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching user details:', error);
+        console.error('❌ Error fetching user details:', error);
         return;
       }
 
@@ -96,29 +106,15 @@ export const useSupabaseAuth = () => {
         mustChangePassword: data?.must_change_password || false
       };
 
+      console.log('✅ User authenticated successfully:', { email: authUser.email, role: authUser.role });
       setUser(authUser);
-      redirectUser(authUser.role);
+      // Remove automatic redirect - let the routes handle it
     } catch (error) {
-      console.error('Error handling auth user:', error);
+      console.error('❌ Error handling auth user:', error);
     }
   };
 
-  const redirectUser = (role: string) => {
-    const currentPath = window.location.pathname;
-    
-    // Don't redirect if already on the correct path
-    switch (role) {
-      case 'super_admin':
-        if (!currentPath.startsWith('/admin')) navigate('/admin');
-        break;
-      case 'company_admin':
-        if (!currentPath.startsWith('/empresa')) navigate('/empresa');
-        break;
-      case 'professional':
-        if (!currentPath.startsWith('/profissional')) navigate('/profissional');
-        break;
-    }
-  };
+  // Removed redirectUser function - let routes handle navigation
 
   const signUp = async (email: string, password: string, userData: {
     name: string;
