@@ -17,6 +17,7 @@ interface AuthUser {
 export const useSupabaseAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   
   let navigate;
   try {
@@ -27,37 +28,73 @@ export const useSupabaseAuth = () => {
     navigate = () => console.log('Navigation not available');
   }
 
-  // Get user role from database
-  const getUserData = async (userId: string): Promise<AuthUser | null> => {
+  // Clear auth error when setting loading
+  const setLoadingWithErrorClear = (isLoading: boolean) => {
+    setLoading(isLoading);
+    if (!isLoading) {
+      setAuthError(null);
+    }
+  };
+
+  // Get user role from database with enhanced error handling
+  const getUserData = async (userId: string, retryCount = 0): Promise<AuthUser | null> => {
     try {
-      console.log('🔍 Fetching user data for ID:', userId);
+      console.log(`🔍 Fetching user data for ID: ${userId} (attempt ${retryCount + 1})`);
       
+      // Check if Supabase client is properly initialized
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('users')
-        .select('role, name, company_id, avatar, must_change_password')
+        .select('role, name, company_id, avatar, must_change_password, email')
         .eq('id', userId)
         .single();
 
       if (error) {
-        console.error('❌ Error fetching user data:', error);
+        console.error('❌ Supabase query error:', error);
+        console.error('❌ Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+
+        // If user not found and we haven't retried, try once more
+        if (error.code === 'PGRST116' && retryCount < 2) {
+          console.log('⚠️ User not found, retrying in 1 second...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return getUserData(userId, retryCount + 1);
+        }
+
+        // If user not found after retries, create a fallback user
+        if (error.code === 'PGRST116') {
+          console.warn('⚠️ User not found in database, creating fallback user');
+          const fallbackUser = await createFallbackUser(userId);
+          return fallbackUser;
+        }
+
         return null;
       }
 
       if (!data) {
-        console.error('❌ No user data found for ID:', userId);
+        console.error('❌ No user data returned from query');
         return null;
       }
 
       console.log('✅ User data fetched successfully:', {
         role: data.role,
         name: data.name,
-        companyId: data.company_id
+        companyId: data.company_id,
+        email: data.email
       });
 
       return {
         id: userId,
-        email: '', // Will be filled from Supabase user
-        name: data.name || '',
+        email: data.email || '',
+        name: data.name || 'Usuário',
         role: data.role || 'professional',
         companyId: data.company_id || undefined,
         avatar: data.avatar || undefined,
@@ -65,6 +102,62 @@ export const useSupabaseAuth = () => {
       };
     } catch (error) {
       console.error('❌ Exception in getUserData:', error);
+      
+      // Retry once on network/connection errors
+      if (retryCount < 1) {
+        console.log('🔄 Retrying getUserData due to exception...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return getUserData(userId, retryCount + 1);
+      }
+      
+      return null;
+    }
+  };
+
+  // Create fallback user when not found in database
+  const createFallbackUser = async (userId: string): Promise<AuthUser | null> => {
+    try {
+      console.log('🔄 Creating fallback user entry for:', userId);
+      
+      // Get email from Supabase auth user
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const email = authUser?.email || 'usuario@sistema.com';
+      
+      // Try to insert user in database
+      const { data, error } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          name: 'Usuário Sistema',
+          email: email,
+          password: 'supabase_managed',
+          role: 'professional'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Failed to create fallback user:', error);
+        // Return a minimal user object even if insert fails
+        return {
+          id: userId,
+          email: email,
+          name: 'Usuário Sistema',
+          role: 'professional',
+          mustChangePassword: false
+        };
+      }
+
+      console.log('✅ Fallback user created successfully');
+      return {
+        id: userId,
+        email: email,
+        name: 'Usuário Sistema',
+        role: 'professional',
+        mustChangePassword: false
+      };
+    } catch (error) {
+      console.error('❌ Exception creating fallback user:', error);
       return null;
     }
   };
@@ -77,34 +170,27 @@ export const useSupabaseAuth = () => {
       const currentPath = window.location.pathname;
       console.log('📍 Current path before redirect:', currentPath);
       
+      let targetPath = '/login';
       switch (userRole) {
         case 'super_admin':
-          if (currentPath !== '/admin') {
-            console.log('🎯 Redirecting to /admin');
-            navigate('/admin', { replace: true });
-          } else {
-            console.log('✅ Already on correct path: /admin');
-          }
+          targetPath = '/admin';
           break;
         case 'company_admin':
-          if (currentPath !== '/empresa') {
-            console.log('🎯 Redirecting to /empresa');
-            navigate('/empresa', { replace: true });
-          } else {
-            console.log('✅ Already on correct path: /empresa');
-          }
+          targetPath = '/empresa';
           break;
         case 'professional':
-          if (currentPath !== '/profissional') {
-            console.log('🎯 Redirecting to /profissional');
-            navigate('/profissional', { replace: true });
-          } else {
-            console.log('✅ Already on correct path: /profissional');
-          }
+          targetPath = '/profissional';
           break;
         default:
           console.warn('⚠️ Unknown role, redirecting to login');
-          navigate('/login', { replace: true });
+          targetPath = '/login';
+      }
+
+      if (currentPath !== targetPath) {
+        console.log(`🎯 Redirecting to ${targetPath}`);
+        navigate(targetPath, { replace: true });
+      } else {
+        console.log(`✅ Already on correct path: ${targetPath}`);
       }
     } catch (error) {
       console.error('❌ Navigation error:', error);
@@ -116,25 +202,28 @@ export const useSupabaseAuth = () => {
     }
   };
 
-  // Handle authenticated user
+  // Handle authenticated user with enhanced error handling
   const handleAuthUser = async (supabaseUser: User) => {
     try {
       console.log('🔄 Starting handleAuthUser for:', supabaseUser.email);
       console.log('📍 Current location:', window.location.pathname);
       
+      setAuthError(null);
+      
       // Get user details from our users table
       const userData = await getUserData(supabaseUser.id);
       
       if (!userData) {
-        console.error('❌ Failed to get user data, setting loading to false');
-        setLoading(false);
+        console.error('❌ Failed to get user data after all retries');
+        setAuthError('Erro ao carregar dados do usuário. Tente fazer login novamente.');
+        setLoadingWithErrorClear(false);
         return;
       }
 
       // Complete the user object with email from Supabase
       const authUser: AuthUser = {
         ...userData,
-        email: supabaseUser.email || ''
+        email: supabaseUser.email || userData.email
       };
 
       console.log('✅ User authenticated successfully:', { 
@@ -168,11 +257,32 @@ export const useSupabaseAuth = () => {
       
       // IMPORTANT: Always set loading to false after processing
       console.log('✅ Setting loading to false - user processing complete');
-      setLoading(false);
+      setLoadingWithErrorClear(false);
       
     } catch (error) {
       console.error('❌ Error in handleAuthUser:', error);
-      setLoading(false);
+      setAuthError('Erro na autenticação. Tente novamente.');
+      setLoadingWithErrorClear(false);
+    }
+  };
+
+  // Force logout function
+  const forceLogout = async () => {
+    try {
+      console.log('🔄 Force logout initiated');
+      setLoadingWithErrorClear(true);
+      await supabase.auth.signOut();
+      setUser(null);
+      setAuthError(null);
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('❌ Error in force logout:', error);
+      // Fallback: clear local state and redirect
+      setUser(null);
+      setAuthError(null);
+      window.location.href = '/login';
+    } finally {
+      setLoadingWithErrorClear(false);
     }
   };
 
@@ -183,7 +293,8 @@ export const useSupabaseAuth = () => {
     // Safety timeout to prevent infinite loading
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Auth initialization timeout reached, forcing loading = false');
-      setLoading(false);
+      setAuthError('Timeout na autenticação. Tente recarregar a página.');
+      setLoadingWithErrorClear(false);
     }, 10000); // 10 seconds timeout
     
     // Listen for auth changes
@@ -199,18 +310,19 @@ export const useSupabaseAuth = () => {
         } else if (event === 'SIGNED_OUT') {
           console.log('👋 User signed out');
           setUser(null);
-          setLoading(false);
+          setAuthError(null);
+          setLoadingWithErrorClear(false);
         } else if (event === 'INITIAL_SESSION') {
           if (session?.user) {
             console.log('🔄 Initial session found, processing user');
             await handleAuthUser(session.user);
           } else {
             console.log('📊 Initial session check: No session');
-            setLoading(false);
+            setLoadingWithErrorClear(false);
           }
         } else {
           console.log('ℹ️ Other auth event:', event);
-          setLoading(false);
+          setLoadingWithErrorClear(false);
         }
       }
     );
@@ -227,7 +339,7 @@ export const useSupabaseAuth = () => {
     companyName?: string;
   }) => {
     try {
-      setLoading(true);
+      setLoadingWithErrorClear(true);
       console.log('📝 Starting signUp for:', email);
       
       const { data, error } = await supabase.auth.signUp({
@@ -285,13 +397,14 @@ export const useSupabaseAuth = () => {
       console.error('❌ SignUp failed:', error);
       return { success: false, error: error.message };
     } finally {
-      setLoading(false);
+      setLoadingWithErrorClear(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      setLoading(true);
+      setLoadingWithErrorClear(true);
+      setAuthError(null);
       console.log('🔐 Starting signIn for:', email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -301,7 +414,7 @@ export const useSupabaseAuth = () => {
 
       if (error) {
         console.error('❌ SignIn error:', error);
-        setLoading(false);
+        setLoadingWithErrorClear(false);
         throw error;
       }
 
@@ -314,18 +427,20 @@ export const useSupabaseAuth = () => {
       return { success: true, user: data.user };
     } catch (error: any) {
       console.error('❌ SignIn failed:', error);
-      setLoading(false);
+      setAuthError(error.message || 'Erro ao fazer login');
+      setLoadingWithErrorClear(false);
       return { success: false, error: error.message };
     }
   };
 
   const signOut = async () => {
     try {
-      setLoading(true);
+      setLoadingWithErrorClear(true);
       console.log('👋 Starting signOut');
       
       await supabase.auth.signOut();
       setUser(null);
+      setAuthError(null);
       
       try {
         navigate('/login');
@@ -336,16 +451,18 @@ export const useSupabaseAuth = () => {
     } catch (error) {
       console.error('❌ SignOut error:', error);
     } finally {
-      setLoading(false);
+      setLoadingWithErrorClear(false);
     }
   };
 
   return {
     user,
     loading,
+    authError,
     signUp,
     signIn,
     signOut,
+    forceLogout,
     isAuthenticated: !!user
   };
 };

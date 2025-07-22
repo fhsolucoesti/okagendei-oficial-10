@@ -30,7 +30,7 @@ const Login = () => {
     backgroundColor: '#f8fafc',
     backgroundImage: ''
   });
-  const { signIn, user } = useAuth();
+  const { signIn, user, authError, forceLogout } = useAuth();
   const navigate = useNavigate();
 
   // Carregar configurações de personalização
@@ -89,6 +89,11 @@ const Login = () => {
     // O loading será resetado automaticamente após o redirecionamento
   };
 
+  const handleForceLogout = () => {
+    console.log('🔄 Force logout from login page');
+    forceLogout();
+  };
+
   const backgroundStyle = config.backgroundType === 'image' && config.backgroundImage
     ? {
         backgroundImage: `url(${config.backgroundImage})`,
@@ -143,6 +148,18 @@ const Login = () => {
             <CardDescription>
               Entre com suas credenciais para acessar o sistema
             </CardDescription>
+            {authError && (
+              <div className="bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
+                <p className="font-medium">Erro de autenticação:</p>
+                <p>{authError}</p>
+                <button 
+                  onClick={handleForceLogout}
+                  className="mt-2 text-xs underline hover:no-underline"
+                >
+                  Limpar sessão e tentar novamente
+                </button>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

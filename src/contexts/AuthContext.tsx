@@ -13,6 +13,8 @@ interface AuthContextType {
   signOut: () => void;
   isAuthenticated: boolean;
   loading: boolean;
+  authError: string | null;
+  forceLogout: () => void;
   // Legacy methods for compatibility
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
@@ -56,9 +58,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     supabaseAuth = {
       user: null,
       loading: false,
+      authError: 'Auth not available',
       signIn: async () => ({ success: false, error: 'Auth not available' }),
       signUp: async () => ({ success: false, error: 'Auth not available' }),
       signOut: async () => {},
+      forceLogout: async () => {},
       isAuthenticated: false
     };
   }
@@ -105,6 +109,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       signOut: supabaseAuth.signOut,
       isAuthenticated: supabaseAuth.isAuthenticated,
       loading: supabaseAuth.loading,
+      authError: supabaseAuth.authError,
+      forceLogout: supabaseAuth.forceLogout,
       
       // Legacy compatibility
       login,

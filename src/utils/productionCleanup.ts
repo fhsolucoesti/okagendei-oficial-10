@@ -4,46 +4,55 @@
  */
 
 export const clearAllDevelopmentData = () => {
-  console.log('🧹 Limpando todos os dados de desenvolvimento...');
+  console.log('🧹 Iniciando limpeza geral dos dados de desenvolvimento...');
   
-  // Clear all localStorage data
-  const keysToRemove = [
-    'companies',
-    'services', 
-    'professionals',
-    'appointments',
-    'clients',
-    'commissions',
-    'expenses',
-    'invoices',
-    'notifications',
-    'coupons',
-    'landingPageConfigurations',
-    'user',
-    'token'
+  // Lista de chaves importantes que devem ser preservadas
+  const preserveKeys = [
+    'supabase.auth.token',
+    'sb-project-ref',
+    'sb-api-url',
+    'platformConfig',
+    'productionCleanupComplete',
+    'colorTheme'
   ];
-
-  keysToRemove.forEach(key => {
-    localStorage.removeItem(key);
+  
+  // Backup das configurações importantes
+  const backupData: { [key: string]: string | null } = {};
+  preserveKeys.forEach(key => {
+    backupData[key] = localStorage.getItem(key);
   });
-
-  console.log('✅ Dados do localStorage limpos');
   
-  // Clear session storage
+  // Limpar localStorage, mas preservar dados essenciais
+  localStorage.clear();
+  
+  // Restaurar dados importantes
+  Object.entries(backupData).forEach(([key, value]) => {
+    if (value !== null) {
+      localStorage.setItem(key, value);
+    }
+  });
+  
+  // Limpar sessionStorage (pode ser completamente limpo)
   sessionStorage.clear();
-  console.log('✅ Session storage limpo');
   
-  // Clear any cached data
-  if ('caches' in window) {
-    caches.keys().then(names => {
-      names.forEach(name => {
-        caches.delete(name);
+  // Limpar dados de desenvolvimento específicos do IndexedDB se houver
+  if ('indexedDB' in window) {
+    try {
+      // Limpar bases de dados de desenvolvimento conhecidas
+      const dbsToDelete = ['supabase-cache', 'dev-data', 'test-data'];
+      dbsToDelete.forEach(dbName => {
+        indexedDB.deleteDatabase(dbName);
       });
-    });
-    console.log('✅ Cache do navegador limpo');
+    } catch (error) {
+      console.warn('⚠️ Erro ao limpar IndexedDB:', error);
+    }
   }
   
-  console.log('🎉 Sistema totalmente limpo para produção!');
+  console.log('✅ Limpeza concluída. Dados essenciais preservados.');
+  console.log('📋 Dados preservados:', Object.keys(backupData).filter(key => backupData[key] !== null));
+  
+  // Não forçar reload aqui para evitar loops
+  alert('Limpeza concluída! Os dados de desenvolvimento foram removidos, mas as configurações essenciais foram preservadas.');
 };
 
 export const resetLandingPageToDefaults = () => {
