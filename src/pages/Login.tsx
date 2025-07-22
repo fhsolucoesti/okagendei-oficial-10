@@ -41,26 +41,13 @@ const Login = () => {
     }
   }, []);
 
-  // Redirect if already authenticated
+  // Redirecionamento é gerenciado automaticamente pelo useSupabaseAuth
+  // Apenas log para debug
   useEffect(() => {
     if (user) {
-      console.log('🔄 User already authenticated, redirecting...');
-      const role = user.role;
-      switch (role) {
-        case 'super_admin':
-          navigate('/admin', { replace: true });
-          break;
-        case 'company_admin':
-          navigate('/empresa', { replace: true });
-          break;
-        case 'professional':
-          navigate('/profissional', { replace: true });
-          break;
-        default:
-          console.warn('⚠️ Unknown role:', role);
-      }
+      console.log('🔄 User detected in Login page, useSupabaseAuth should handle redirection:', user.role);
     }
-  }, [user, navigate]);
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,19 +64,29 @@ const Login = () => {
       const result = await signIn(email, password);
       
       if (result.success) {
-        console.log('✅ Login successful, user should be redirected automatically');
-        toast.success('Login realizado com sucesso!');
-        // O redirecionamento será feito automaticamente pelo useSupabaseAuth
+        console.log('✅ Login successful, waiting for automatic redirection...');
+        toast.success('Login realizado com sucesso! Redirecionando...');
+        
+        // Timeout de segurança para garantir redirecionamento
+        setTimeout(() => {
+          if (window.location.pathname === '/login') {
+            console.log('⚠️ Still on login page after 3s, forcing redirection');
+            window.location.reload();
+          }
+        }, 3000);
+        
       } else {
         console.error('❌ Login failed:', result.error);
         toast.error(result.error || 'Erro ao fazer login. Verifique suas credenciais.');
+        setIsLoading(false);
       }
     } catch (error: any) {
       console.error('❌ Login error:', error);
       toast.error('Erro ao fazer login. Verifique suas credenciais.');
-    } finally {
       setIsLoading(false);
     }
+    // Não resetar isLoading no finally para login bem-sucedido
+    // O loading será resetado automaticamente após o redirecionamento
   };
 
   const backgroundStyle = config.backgroundType === 'image' && config.backgroundImage

@@ -76,39 +76,51 @@ export const useSupabaseAuth = () => {
   useEffect(() => {
     console.log('🚀 Initializing auth...');
     
+    // Listen for auth changes FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔄 Auth state change:', event, session ? 'Session exists' : 'No session');
+        console.log('📋 Session details:', session ? {
+          user: session.user?.email,
+          expires: session.expires_at,
+          token: !!session.access_token
+        } : 'null');
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('✅ SIGNED_IN event detected, calling handleAuthUser');
+          await handleAuthUser(session.user);
+        } else if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out');
+          setUser(null);
+        } else if (event === 'INITIAL_SESSION' && session?.user) {
+          console.log('🔄 Initial session found, calling handleAuthUser');
+          await handleAuthUser(session.user);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    // THEN check for existing session
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         console.log('📊 Initial session check:', session ? 'Session found' : 'No session');
         
         if (session?.user) {
+          console.log('🔄 Existing session found, calling handleAuthUser');
           await handleAuthUser(session.user);
         } else {
           console.log('❌ No user in session, setting loading to false');
+          setLoading(false);
         }
       } catch (error) {
         console.error('❌ Error initializing auth:', error);
-      } finally {
         setLoading(false);
       }
     };
 
     initializeAuth();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('🔄 Auth state change:', event, session ? 'Session exists' : 'No session');
-        
-        if (event === 'SIGNED_IN' && session?.user) {
-          await handleAuthUser(session.user);
-        } else if (event === 'SIGNED_OUT') {
-          console.log('👋 User signed out');
-          setUser(null);
-        }
-        setLoading(false);
-      }
-    );
 
     return () => subscription.unsubscribe();
   }, []);
@@ -116,6 +128,7 @@ export const useSupabaseAuth = () => {
   const handleAuthUser = async (supabaseUser: User) => {
     try {
       console.log('🔄 Handling auth user:', supabaseUser.email);
+      console.log('📍 Current location:', window.location.pathname);
       
       // Get user details from our users table
       const { data, error } = await supabase
@@ -139,18 +152,35 @@ export const useSupabaseAuth = () => {
         mustChangePassword: data?.must_change_password || false
       };
 
-      console.log('✅ User authenticated successfully:', { email: authUser.email, role: authUser.role });
+      console.log('✅ User authenticated successfully:', { 
+        email: authUser.email, 
+        role: authUser.role,
+        currentPath: window.location.pathname
+      });
+      
       setUser(authUser);
       
-      // Only redirect if not already on a dashboard page
+      // Always redirect after login - remove the isDashboardPage check that was preventing redirection
       const currentPath = window.location.pathname;
-      const isDashboardPage = currentPath.startsWith('/admin') || 
-                             currentPath.startsWith('/empresa') || 
-                             currentPath.startsWith('/profissional');
+      console.log('🎯 Checking if redirection is needed from:', currentPath);
       
-      if (!isDashboardPage) {
-        console.log('🚀 Redirecting from login to dashboard...');
+      if (currentPath === '/login' || currentPath === '/' || currentPath === '/home') {
+        console.log('🚀 Redirecting from login/home to dashboard for role:', authUser.role);
         redirectUser(authUser.role);
+        
+        // Fallback redirecionamento manual após 2 segundos
+        setTimeout(() => {
+          const stillOnSamePage = window.location.pathname === currentPath;
+          if (stillOnSamePage) {
+            console.log('⚠️ Auto-redirect failed, forcing manual redirect');
+            const targetPath = authUser.role === 'super_admin' ? '/admin' :
+                             authUser.role === 'company_admin' ? '/empresa' :
+                             '/profissional';
+            window.location.href = targetPath;
+          }
+        }, 2000);
+      } else {
+        console.log('✅ User already on correct dashboard, no redirect needed');
       }
     } catch (error) {
       console.error('❌ Error handling auth user:', error);
@@ -225,16 +255,21 @@ export const useSupabaseAuth = () => {
 
       if (error) {
         console.error('❌ SignIn error:', error);
+        setLoading(false); // Reset loading on error
         throw error;
       }
 
       console.log('✅ SignIn successful:', data.user?.email);
+      console.log('🔗 Session created:', !!data.session);
+      
+      // Don't set loading to false here - let onAuthStateChange handle it
+      // after the user is properly authenticated and redirected
+      
       return { success: true, user: data.user };
     } catch (error: any) {
       console.error('Error signing in:', error);
+      setLoading(false); // Only reset on error
       return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
     }
   };
 
