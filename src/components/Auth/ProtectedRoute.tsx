@@ -1,8 +1,6 @@
 
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useData } from '@/contexts/DataContext';
-import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,18 +8,9 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, isLoading } = useAuth();
-  const { initializeCompanyData } = useData();
+  const { user, loading } = useAuth();
 
-  // Inicializar dados da empresa quando usuário company_admin fizer login
-  useEffect(() => {
-    if (user && user.role === 'company_admin' && user.companyId) {
-      console.log('Usuário company_admin detectado, inicializando dados da empresa:', user.companyId);
-      initializeCompanyData(user.companyId);
-    }
-  }, [user, initializeCompanyData]);
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
