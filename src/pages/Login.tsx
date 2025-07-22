@@ -30,7 +30,7 @@ const Login = () => {
     backgroundColor: '#f8fafc',
     backgroundImage: ''
   });
-  const { login } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
   // Carregar configurações de personalização
@@ -41,21 +41,51 @@ const Login = () => {
     }
   }, []);
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      console.log('🔄 User already authenticated, redirecting...');
+      const role = user.role;
+      switch (role) {
+        case 'super_admin':
+          navigate('/admin', { replace: true });
+          break;
+        case 'company_admin':
+          navigate('/empresa', { replace: true });
+          break;
+        case 'professional':
+          navigate('/profissional', { replace: true });
+          break;
+        default:
+          console.warn('⚠️ Unknown role:', role);
+      }
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error('Por favor, preencha todos os campos');
+      return;
+    }
+
     setIsLoading(true);
+    console.log('🚀 Login attempt for:', email);
 
     try {
-      const success = await login(email, password);
+      const result = await signIn(email, password);
       
-      if (success) {
+      if (result.success) {
+        console.log('✅ Login successful, user should be redirected automatically');
         toast.success('Login realizado com sucesso!');
-        // O redirecionamento será feito automaticamente pelo useEffect no AuthContext
-        // ou podemos buscar o usuário atual e redirecionar baseado no role
+        // O redirecionamento será feito automaticamente pelo useSupabaseAuth
       } else {
-        toast.error('Erro ao fazer login. Verifique suas credenciais.');
+        console.error('❌ Login failed:', result.error);
+        toast.error(result.error || 'Erro ao fazer login. Verifique suas credenciais.');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ Login error:', error);
       toast.error('Erro ao fazer login. Verifique suas credenciais.');
     } finally {
       setIsLoading(false);
@@ -128,6 +158,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -140,6 +171,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
 

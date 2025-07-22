@@ -48,7 +48,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Legacy compatibility methods
   const login = async (email: string, password: string): Promise<boolean> => {
+    console.log('🔄 Legacy login method called for:', email);
     const result = await supabaseAuth.signIn(email, password);
+    console.log('🔄 Legacy login result:', result.success);
     return result.success;
   };
 

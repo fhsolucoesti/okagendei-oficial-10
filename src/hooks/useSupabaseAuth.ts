@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +37,26 @@ export const useSupabaseAuth = () => {
     } catch (error) {
       console.error('Error getting user role:', error);
       return 'professional';
+    }
+  };
+
+  // Redirect user based on role
+  const redirectUser = (userRole: AuthUser['role']) => {
+    console.log('🔄 Redirecting user based on role:', userRole);
+    
+    switch (userRole) {
+      case 'super_admin':
+        navigate('/admin', { replace: true });
+        break;
+      case 'company_admin':
+        navigate('/empresa', { replace: true });
+        break;
+      case 'professional':
+        navigate('/profissional', { replace: true });
+        break;
+      default:
+        console.warn('⚠️ Unknown role, redirecting to login');
+        navigate('/login', { replace: true });
     }
   };
 
@@ -108,13 +129,21 @@ export const useSupabaseAuth = () => {
 
       console.log('✅ User authenticated successfully:', { email: authUser.email, role: authUser.role });
       setUser(authUser);
-      // Remove automatic redirect - let the routes handle it
+      
+      // Only redirect if not already on a dashboard page
+      const currentPath = window.location.pathname;
+      const isDashboardPage = currentPath.startsWith('/admin') || 
+                             currentPath.startsWith('/empresa') || 
+                             currentPath.startsWith('/profissional');
+      
+      if (!isDashboardPage) {
+        console.log('🚀 Redirecting from login to dashboard...');
+        redirectUser(authUser.role);
+      }
     } catch (error) {
       console.error('❌ Error handling auth user:', error);
     }
   };
-
-  // Removed redirectUser function - let routes handle navigation
 
   const signUp = async (email: string, password: string, userData: {
     name: string;
@@ -175,14 +204,19 @@ export const useSupabaseAuth = () => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      console.log('🔐 Starting signIn process for:', email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ SignIn error:', error);
+        throw error;
+      }
 
+      console.log('✅ SignIn successful:', data.user?.email);
       return { success: true, user: data.user };
     } catch (error: any) {
       console.error('Error signing in:', error);
