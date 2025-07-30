@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   HeroSection,
   AboutSection,
@@ -13,7 +14,6 @@ import {
   PlanSettings,
   SignupSettings
 } from '@/types/landingConfig';
-import { loadAllConfigurations, saveAllConfigurations as saveConfigs } from '@/utils/landingConfigStorage';
 
 export const useLandingConfigState = () => {
   const [heroSection, setHeroSection] = useState<HeroSection>({
@@ -261,39 +261,70 @@ export const useLandingConfigState = () => {
     }
   });
 
-  const reloadConfigurations = () => {
-    const configs = loadAllConfigurations();
-    setHeroSection(configs.heroSection || heroSection);
-    setAboutSection(configs.aboutSection || aboutSection);
-    setCompanyInfo(configs.companyInfo || companyInfo);
-    setSocialLinks(configs.socialLinks || socialLinks);
-    setTestimonials(configs.testimonials || testimonials);
-    setLegalLinks(configs.legalLinks || legalLinks);
-    setPromotionalSettings(configs.promotionalSettings || promotionalSettings);
-    setCtaSection(configs.ctaSection || ctaSection);
-    setFooterSection(configs.footerSection || footerSection);
-    setPlanSettings(configs.planSettings || planSettings);
-    setSignupSettings(configs.signupSettings || signupSettings);
+  const reloadConfigurations = async () => {
+    try {
+      const { data } = await supabase
+        .from('landing_config')
+        .select('config')
+        .single();
+
+      if (data?.config && typeof data.config === 'object' && data.config !== null) {
+        const configs = data.config as any;
+        setHeroSection(configs.heroSection || heroSection);
+        setAboutSection(configs.aboutSection || aboutSection);
+        setCompanyInfo(configs.companyInfo || companyInfo);
+        setSocialLinks(configs.socialLinks || socialLinks);
+        setTestimonials(configs.testimonials || testimonials);
+        setLegalLinks(configs.legalLinks || legalLinks);
+        setPromotionalSettings(configs.promotionalSettings || promotionalSettings);
+        setCtaSection(configs.ctaSection || ctaSection);
+        setFooterSection(configs.footerSection || footerSection);
+        setPlanSettings(configs.planSettings || planSettings);
+        setSignupSettings(configs.signupSettings || signupSettings);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configurações:', error);
+    }
   };
 
   useEffect(() => {
     reloadConfigurations();
   }, []);
 
-  const saveAllConfigurations = () => {
-    saveConfigs({
-      heroSection,
-      aboutSection,
-      companyInfo,
-      socialLinks,
-      testimonials,
-      legalLinks,
-      promotionalSettings,
-      ctaSection,
-      footerSection,
-      planSettings,
-      signupSettings
-    });
+  const saveAllConfigurations = async () => {
+    try {
+      const configData = {
+        heroSection,
+        aboutSection,
+        companyInfo,
+        socialLinks,
+        testimonials,
+        legalLinks,
+        promotionalSettings,
+        ctaSection,
+        footerSection,
+        planSettings,
+        signupSettings
+      };
+
+      const { data: existing } = await supabase
+        .from('landing_config')
+        .select('id')
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('landing_config')
+          .update({ config: configData as any })
+          .eq('id', existing.id);
+      } else {
+        await supabase
+          .from('landing_config')
+          .insert({ config: configData as any });
+      }
+    } catch (error) {
+      console.error('Erro ao salvar configurações:', error);
+    }
   };
 
   return {

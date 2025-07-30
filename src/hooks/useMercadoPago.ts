@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
+import { useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface MercadoPagoConfig {
   accessToken: string;
@@ -34,11 +34,15 @@ interface UseMercadoPagoReturn {
   error: string | null;
 }
 
-// Configuração simulada - Na implementação real, viria de variáveis de ambiente
-const MERCADO_PAGO_CONFIG: MercadoPagoConfig = {
-  accessToken: 'TEST-ACCESS-TOKEN', // Substitua pelo seu token real
-  publicKey: 'TEST-PUBLIC-KEY', // Substitua pela sua chave pública real
-  sandboxMode: true
+// Configuração do Mercado Pago - deve ser configurada pelo super admin
+const getMercadoPagoConfig = async (): Promise<MercadoPagoConfig | null> => {
+  try {
+    // Buscar configuração do Mercado Pago no banco (seria implementado quando necessário)
+    return null;
+  } catch (error) {
+    console.error('Erro ao buscar configuração do Mercado Pago:', error);
+    return null;
+  }
 };
 
 export const useMercadoPago = (): UseMercadoPagoReturn => {
@@ -50,24 +54,15 @@ export const useMercadoPago = (): UseMercadoPagoReturn => {
     setError(null);
 
     try {
-      // Simular criação de pagamento PIX
-      // Na implementação real, esta seria uma chamada à API do Mercado Pago
-      const mockPayment: PixPayment = {
-        id: `pix_${Date.now()}`,
-        paymentId: `mp_${Date.now()}`,
-        status: 'pending',
-        amount: preference.unit_price,
-        currency: preference.currency_id,
-        qrCode: '00020101021243650016COM.MERCADOLIVRE02013063638f1264-5292-4004-8166-c3c52550d70c5204000053039865802BR5925OKAGENDEI SISTEMA DE AGEN6014RIO DE JANEIRO62070503***63041D3D',
-        qrCodeBase64: '', // Será gerado pelo componente
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutos
-        createdAt: new Date()
-      };
+      const config = await getMercadoPagoConfig();
+      
+      if (!config) {
+        throw new Error('Configuração do Mercado Pago não encontrada. Configure nas configurações do sistema.');
+      }
 
-      // Simular delay da API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      return mockPayment;
+      // Aqui seria implementada a integração real com Mercado Pago
+      // Por enquanto, retorna erro indicando que precisa ser implementado
+      throw new Error('Integração com Mercado Pago ainda não configurada. Entre em contato com o suporte.');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar pagamento PIX';
       setError(errorMessage);
@@ -79,15 +74,14 @@ export const useMercadoPago = (): UseMercadoPagoReturn => {
 
   const checkPaymentStatus = useCallback(async (paymentId: string): Promise<'pending' | 'approved' | 'rejected' | 'expired'> => {
     try {
-      // Simular verificação de status
-      // Na implementação real, esta seria uma chamada à API do Mercado Pago
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const config = await getMercadoPagoConfig();
       
-      // Simular diferentes status baseado no ID
-      const random = Math.random();
-      if (random > 0.8) return 'approved';
-      if (random > 0.6) return 'rejected';
-      if (random > 0.4) return 'expired';
+      if (!config) {
+        console.error('Configuração do Mercado Pago não encontrada');
+        return 'pending';
+      }
+
+      // Aqui seria implementada a verificação real com Mercado Pago
       return 'pending';
     } catch (err) {
       console.error('Erro ao verificar status do pagamento:', err);
@@ -107,25 +101,7 @@ export const useMercadoPago = (): UseMercadoPagoReturn => {
 export const useMercadoPagoSDK = () => {
   const [isSDKReady, setIsSDKReady] = useState(false);
 
-  useEffect(() => {
-    // Carregar SDK do Mercado Pago
-    const loadMercadoPagoSDK = async () => {
-      try {
-        // Na implementação real, você carregaria o SDK do Mercado Pago
-        // const mp = new MercadoPago(MERCADO_PAGO_CONFIG.publicKey, {
-        //   locale: 'pt-BR'
-        // });
-        
-        setIsSDKReady(true);
-      } catch (error) {
-        console.error('Erro ao carregar SDK do Mercado Pago:', error);
-        toast.error('Erro ao inicializar sistema de pagamento');
-      }
-    };
-
-    loadMercadoPagoSDK();
-  }, []);
-
+  // Por enquanto, retorna falso até que a integração seja configurada
   return { isSDKReady };
 };
 

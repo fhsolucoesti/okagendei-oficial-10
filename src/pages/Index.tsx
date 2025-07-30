@@ -10,40 +10,64 @@ import CompanyList from '@/components/CompanyList';
 import PlanManagement from '@/components/PlanManagement';
 import FinancialOverview from '@/components/FinancialOverview';
 import Notifications from '@/components/Notifications';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Company {
+  id: number;
+  name: string;
+  plan: string;
+  status: 'active' | 'trial' | 'inactive';
+  employees: number;
+  monthlyRevenue: number;
+  trialEndsAt: string | null;
+  createdAt: string;
+}
 
 const Index = () => {
-  const [companies, setCompanies] = useState([
-    {
-      id: 1,
-      name: "Barbearia do João",
-      plan: "Profissional",
-      status: "active" as const,
-      employees: 3,
-      monthlyRevenue: 8500,
-      trialEndsAt: null,
-      createdAt: "2024-01-15"
-    },
-    {
-      id: 2,
-      name: "Studio Bella Nails",
-      plan: "Básico",
-      status: "trial" as const,
-      employees: 1,
-      monthlyRevenue: 2800,
-      trialEndsAt: "2024-07-09",
-      createdAt: "2024-07-02"
-    },
-    {
-      id: 3,
-      name: "Clínica Estética Renovar",
-      plan: "Empresarial",
-      status: "active" as const,
-      employees: 8,
-      monthlyRevenue: 15200,
-      trialEndsAt: null,
-      createdAt: "2024-02-10"
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalUsers, setTotalUsers] = useState(0);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      // Carregar empresas
+      const { data: companiesData } = await supabase
+        .from('companies')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      // Carregar total de usuários
+      const { count: usersCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      if (companiesData) {
+        const transformedCompanies: Company[] = companiesData.map(company => ({
+          id: parseInt(company.id.substring(0, 8), 16) || Math.floor(Math.random() * 1000),
+          name: company.name,
+          plan: company.plan,
+          status: company.status as 'active' | 'trial' | 'inactive',
+          employees: company.employees || 1,
+          monthlyRevenue: Number(company.monthly_revenue) || 0,
+          trialEndsAt: company.trial_ends_at,
+          createdAt: company.created_at
+        }));
+        setCompanies(transformedCompanies);
+      }
+
+      setTotalUsers(usersCount || 0);
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const totalCompanies = companies.length;
   const activeCompanies = companies.filter(c => c.status === 'active').length;
@@ -127,9 +151,9 @@ const Index = () => {
               <Users className="h-4 w-4 text-purple-200" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">247</div>
+              <div className="text-2xl font-bold">{totalUsers}</div>
               <p className="text-xs text-purple-200">
-                Across all companies
+                Usuários cadastrados
               </p>
             </CardContent>
           </Card>
@@ -142,9 +166,11 @@ const Index = () => {
               <TrendingUp className="h-4 w-4 text-orange-200" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+28%</div>
+              <div className="text-2xl font-bold">
+                {companies.length > 0 ? `+${companies.length}` : '0'}
+              </div>
               <p className="text-xs text-orange-200">
-                Novas empresas este mês
+                Empresas cadastradas
               </p>
             </CardContent>
           </Card>
