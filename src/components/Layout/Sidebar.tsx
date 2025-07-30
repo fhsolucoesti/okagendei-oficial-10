@@ -1,32 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Users, 
-  Calendar, 
-  DollarSign, 
-  Settings, 
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Scissors,
-  UserCheck,
-  CreditCard,
-  Link,
-  PieChart,
-  Bell,
-  ClipboardList,
-  Menu,
-  X,
-  Globe,
-  Palette,
-  Headphones
-} from 'lucide-react';
+import { Calendar, LogOut, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNavigation } from '@/hooks/useNavigation';
+import * as Icons from 'lucide-react';
 
 interface PlatformConfig {
   menuLogo?: string;
@@ -89,42 +69,27 @@ const Sidebar = () => {
     }
   };
 
+  const { getUserRoutes, isCurrentRoute } = useNavigation();
+  
   const getSidebarItems = () => {
-    if (user?.role === 'super_admin') {
-      return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
-        { icon: Building2, label: 'Empresas', path: '/admin/empresas' },
-        { icon: CreditCard, label: 'Planos', path: '/admin/planos' },
-        { icon: PieChart, label: 'Financeiro', path: '/admin/financeiro' },
-        { icon: Bell, label: 'Notificações', path: '/admin/notificacoes' },
-        { icon: Headphones, label: 'Central de Serviço', path: '/admin/central-servico' },
-        { icon: Globe, label: 'Landing Page', path: '/admin/landing-page' },
-        { icon: Palette, label: 'Personalização da Plataforma', path: '/admin/personalizacao' },
-        { icon: Settings, label: 'Configurações', path: '/admin/configuracoes' }
-      ];
-    } else if (user?.role === 'company_admin') {
-      return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/empresa' },
-        { icon: Calendar, label: 'Agendamentos', path: '/empresa/agendamentos' },
-        { icon: Users, label: 'Funcionários', path: '/empresa/funcionarios' },
-        { icon: Scissors, label: 'Serviços', path: '/empresa/servicos' },
-        { icon: UserCheck, label: 'Clientes', path: '/empresa/clientes' },
-        { icon: DollarSign, label: 'Financeiro', path: '/empresa/financeiro' },
-        { icon: Link, label: 'Link Público', path: '/empresa/link-publico' },
-        { icon: CreditCard, label: 'Assinatura', path: '/empresa/assinatura' },
-        { icon: Headphones, label: 'Central de Serviço', path: '/empresa/central-servico' },
-        { icon: Settings, label: 'Configurações', path: '/empresa/configuracoes' }
-      ];
-    } else if (user?.role === 'professional') {
-      return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/profissional' },
-        { icon: Calendar, label: 'Minha Agenda', path: '/profissional/agenda' },
-        { icon: DollarSign, label: 'Comissões', path: '/profissional/comissoes' },
-        { icon: ClipboardList, label: 'Histórico', path: '/profissional/historico' },
-        { icon: Settings, label: 'Configurações', path: '/profissional/configuracoes' }
-      ];
-    }
-    return [];
+    const userRoutes = getUserRoutes();
+    return userRoutes.map(route => {
+      const IconComponent = Icons[route.icon as keyof typeof Icons] as any;
+      return {
+        icon: IconComponent,
+        label: route.label!,
+        path: route.path,
+        fullPath: user?.role ? 
+          (route.path === '' ? 
+            (user.role === 'super_admin' ? '/admin' : 
+             user.role === 'company_admin' ? '/empresa' : 
+             '/profissional') :
+            (user.role === 'super_admin' ? `/admin${route.path}` :
+             user.role === 'company_admin' ? `/empresa${route.path}` :
+             `/profissional${route.path}`)) : 
+          route.path
+      };
+    });
   };
 
   const sidebarItems = getSidebarItems();
@@ -196,8 +161,8 @@ const Sidebar = () => {
               <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                 {sidebarItems.map((item) => (
                   <NavLink
-                    key={item.path}
-                    to={item.path}
+                    key={item.fullPath}
+                    to={item.fullPath}
                     onClick={closeMobileSidebar}
                     className={({ isActive }) =>
                       `flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${
@@ -273,8 +238,8 @@ const Sidebar = () => {
       <nav className="flex-1 p-4 space-y-2">
         {sidebarItems.map((item) => (
           <NavLink
-            key={item.path}
-            to={item.path}
+            key={item.fullPath}
+            to={item.fullPath}
             className={({ isActive }) =>
               `flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                 isActive 
