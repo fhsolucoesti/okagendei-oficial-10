@@ -1,6 +1,5 @@
-
-import { useState } from 'react';
 import { Plan } from '@/types';
+import { useForm } from '@/hooks/useForm';
 import { toast } from 'sonner';
 
 interface PlanFormData {
@@ -13,31 +12,54 @@ interface PlanFormData {
   isActive: boolean;
 }
 
-export const usePlanForm = (addPlan: (plan: Omit<Plan, 'id'>) => void, updatePlan: (id: string, data: Partial<Plan>) => void) => {
-  const [formData, setFormData] = useState<PlanFormData>({
-    name: '',
-    maxEmployees: '',
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    features: [''],
-    isPopular: false,
-    isActive: true
+const initialValues: PlanFormData = {
+  name: '',
+  maxEmployees: '',
+  monthlyPrice: 0,
+  yearlyPrice: 0,
+  features: [''],
+  isPopular: false,
+  isActive: true
+};
+
+const validatePlan = (values: PlanFormData): Record<string, string> => {
+  const errors: Record<string, string> = {};
+
+  if (!values.name.trim()) {
+    errors.name = 'Nome do plano é obrigatório';
+  }
+
+  if (!values.maxEmployees.trim()) {
+    errors.maxEmployees = 'Número de funcionários é obrigatório';
+  }
+
+  if (values.monthlyPrice <= 0) {
+    errors.monthlyPrice = 'Preço mensal deve ser maior que zero';
+  }
+
+  if (values.yearlyPrice <= 0) {
+    errors.yearlyPrice = 'Preço anual deve ser maior que zero';
+  }
+
+  const validFeatures = values.features.filter(f => f.trim() !== '');
+  if (validFeatures.length === 0) {
+    errors.features = 'Pelo menos um benefício deve ser adicionado';
+  }
+
+  return errors;
+};
+
+export const usePlanForm = (
+  addPlan: (plan: Omit<Plan, 'id'>) => void, 
+  updatePlan: (id: string, data: Partial<Plan>) => void
+) => {
+  const form = useForm({
+    initialValues,
+    validate: validatePlan
   });
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      maxEmployees: '',
-      monthlyPrice: 0,
-      yearlyPrice: 0,
-      features: [''],
-      isPopular: false,
-      isActive: true
-    });
-  };
-
   const loadPlanData = (plan: Plan) => {
-    setFormData({
+    form.setValues({
       name: plan.name,
       maxEmployees: plan.maxEmployees.toString(),
       monthlyPrice: plan.monthlyPrice,
@@ -49,65 +71,35 @@ export const usePlanForm = (addPlan: (plan: Omit<Plan, 'id'>) => void, updatePla
   };
 
   const addFeature = () => {
-    setFormData({
-      ...formData,
-      features: [...formData.features, '']
-    });
+    form.setFieldValue('features', [...form.values.features, '']);
   };
 
   const updateFeature = (index: number, value: string) => {
-    const newFeatures = [...formData.features];
+    const newFeatures = [...form.values.features];
     newFeatures[index] = value;
-    setFormData({
-      ...formData,
-      features: newFeatures
-    });
+    form.setFieldValue('features', newFeatures);
   };
 
   const removeFeature = (index: number) => {
-    if (formData.features.length > 1) {
-      const newFeatures = formData.features.filter((_, i) => i !== index);
-      setFormData({
-        ...formData,
-        features: newFeatures
-      });
+    if (form.values.features.length > 1) {
+      const newFeatures = form.values.features.filter((_, i) => i !== index);
+      form.setFieldValue('features', newFeatures);
     }
   };
 
   const validateAndSubmit = (editingPlan: Plan | null) => {
-    // Validação básica
-    if (!formData.name.trim()) {
-      toast.error('Nome do plano é obrigatório');
-      return false;
-    }
-    
-    if (!formData.maxEmployees.trim()) {
-      toast.error('Número de funcionários é obrigatório');
-      return false;
-    }
-    
-    if (formData.monthlyPrice <= 0) {
-      toast.error('Preço mensal deve ser maior que zero');
-      return false;
-    }
-    
-    if (formData.yearlyPrice <= 0) {
-      toast.error('Preço anual deve ser maior que zero');
-      return false;
-    }
-    
-    const validFeatures = formData.features.filter(f => f.trim() !== '');
-    if (validFeatures.length === 0) {
-      toast.error('Pelo menos um benefício deve ser adicionado');
+    if (!form.validateForm()) {
       return false;
     }
 
-    // Converter maxEmployees para number ou string 'unlimited'
+    const { values } = form;
+    
+    // Convert maxEmployees to number or string 'unlimited'
     let maxEmployees: number | 'unlimited';
-    if (formData.maxEmployees.toLowerCase() === 'unlimited' || formData.maxEmployees.toLowerCase() === 'ilimitado') {
+    if (values.maxEmployees.toLowerCase() === 'unlimited' || values.maxEmployees.toLowerCase() === 'ilimitado') {
       maxEmployees = 'unlimited';
     } else {
-      const numEmployees = parseInt(formData.maxEmployees);
+      const numEmployees = parseInt(values.maxEmployees);
       if (isNaN(numEmployees) || numEmployees <= 0) {
         toast.error('Número de funcionários deve ser um número válido ou "ilimitado"');
         return false;
@@ -115,24 +107,22 @@ export const usePlanForm = (addPlan: (plan: Omit<Plan, 'id'>) => void, updatePla
       maxEmployees = numEmployees;
     }
 
+    const validFeatures = values.features.filter(f => f.trim() !== '');
+    
     const planData: Partial<Plan> = {
-      name: formData.name,
+      name: values.name,
       maxEmployees: maxEmployees,
-      monthlyPrice: formData.monthlyPrice,
-      yearlyPrice: formData.yearlyPrice,
+      monthlyPrice: values.monthlyPrice,
+      yearlyPrice: values.yearlyPrice,
       features: validFeatures,
-      isPopular: formData.isPopular,
-      isActive: formData.isActive
+      isPopular: values.isPopular,
+      isActive: values.isActive
     };
 
-    console.log('Submitting plan data:', planData);
-
     if (editingPlan) {
-      // Atualizar plano existente
       updatePlan(editingPlan.id, planData);
       toast.success('Plano atualizado com sucesso!');
     } else {
-      // Criar novo plano
       addPlan(planData as Omit<Plan, 'id'>);
       toast.success('Plano criado com sucesso!');
     }
@@ -141,13 +131,14 @@ export const usePlanForm = (addPlan: (plan: Omit<Plan, 'id'>) => void, updatePla
   };
 
   return {
-    formData,
-    setFormData,
-    resetForm,
+    formData: form.values,
+    setFormData: form.setValues,
+    resetForm: form.resetForm,
     loadPlanData,
     addFeature,
     updateFeature,
     removeFeature,
-    validateAndSubmit
+    validateAndSubmit,
+    errors: form.errors
   };
 };
