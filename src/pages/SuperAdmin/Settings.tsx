@@ -8,6 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Settings, Shield, Mail, Database, Server, Bell } from 'lucide-react';
 import Header from '@/components/Layout/Header';
+import { UserPasswordManagement } from '@/components/Auth/UserPasswordManagement';
+import { ChangePasswordDialog } from '@/components/Auth/ChangePasswordDialog';
 import { toast } from 'sonner';
 
 const SuperAdminSettings = () => {
@@ -293,12 +295,32 @@ const SuperAdminSettings = () => {
                     }
                   />
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+               </div>
 
-        {/* Notificações do Administrador */}
+               <Separator />
+
+               <div className="space-y-4">
+                 <h4 className="font-medium">Alterar Minha Senha</h4>
+                 <p className="text-sm text-gray-600 mb-4">
+                   Altere sua senha de administrador
+                 </p>
+                 <ChangePasswordDialog 
+                   trigger={
+                     <Button variant="outline">
+                       Alterar Minha Senha
+                     </Button>
+                   }
+                   isForCurrentUser={true}
+                 />
+               </div>
+             </div>
+           </CardContent>
+         </Card>
+
+         {/* Gerenciamento de Senhas de Usuários */}
+         <UserPasswordManagement showAllUsers={true} />
+
+         {/* Notificações do Administrador */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
