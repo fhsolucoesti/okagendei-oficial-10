@@ -13,6 +13,7 @@ import { Settings, Building2, Bell, Shield, Upload, User } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
+import { ChangePasswordDialog } from '@/components/Auth/ChangePasswordDialog';
 import { toast } from 'sonner';
 
 const CompanySettings = () => {
@@ -334,23 +335,19 @@ const CompanySettings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form className="space-y-4">
-                    <div>
-                      <Label htmlFor="currentPassword">Senha Atual</Label>
-                      <Input id="currentPassword" type="password" />
-                    </div>
-                    <div>
-                      <Label htmlFor="newPassword">Nova Senha</Label>
-                      <Input id="newPassword" type="password" />
-                    </div>
-                    <div>
-                      <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
-                      <Input id="confirmPassword" type="password" />
-                    </div>
-                    <Button type="submit" className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700">
-                      Alterar Senha
-                    </Button>
-                  </form>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Clique no botão abaixo para alterar sua senha. Por segurança, você precisará confirmar sua senha atual.
+                    </p>
+                    <ChangePasswordDialog 
+                      trigger={
+                        <Button className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700">
+                          Alterar Senha
+                        </Button>
+                      }
+                      isForCurrentUser={true}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 

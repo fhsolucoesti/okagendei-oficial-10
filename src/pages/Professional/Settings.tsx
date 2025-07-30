@@ -10,6 +10,7 @@ import { Settings, User, Clock, Bell, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import Header from '@/components/Layout/Header';
+import { ChangePasswordDialog } from '@/components/Auth/ChangePasswordDialog';
 import { toast } from 'sonner';
 
 const ProfessionalSettings = () => {
@@ -265,12 +266,20 @@ const ProfessionalSettings = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <Button variant="outline" className="w-full">
-                Alterar Senha
-              </Button>
-              <Button variant="outline" className="w-full">
+              <ChangePasswordDialog 
+                trigger={
+                  <Button variant="outline" className="w-full">
+                    Alterar Senha
+                  </Button>
+                }
+                isForCurrentUser={true}
+              />
+              <Button variant="outline" className="w-full" disabled>
                 Configurar Autenticação em Duas Etapas
               </Button>
+              <p className="text-xs text-muted-foreground">
+                * Autenticação em duas etapas será implementada em breve
+              </p>
             </div>
           </CardContent>
         </Card>
