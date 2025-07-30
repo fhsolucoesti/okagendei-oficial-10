@@ -162,15 +162,6 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="mt-6 space-y-2 text-sm text-gray-600">
-              <p className="font-medium">Usuários de demonstração:</p>
-              <div className="space-y-1">
-                <p><strong>Admin Geral:</strong> admin@okagendei.com</p>
-                <p><strong>Admin Empresa:</strong> empresa@teste.com</p>
-                <p><strong>Profissional:</strong> profissional@teste.com</p>
-                <p className="text-xs text-gray-500">Senha: qualquer valor</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
