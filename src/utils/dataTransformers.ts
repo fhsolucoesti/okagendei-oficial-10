@@ -20,10 +20,11 @@ export const transformCompanyFromDB = (dbCompany: any): Company => ({
   status: dbCompany.status,
   employees: dbCompany.employees,
   monthlyRevenue: Number(dbCompany.monthly_revenue || 0),
-  trialEndsAt: dbCompany.trial_ends_at ? new Date(dbCompany.trial_ends_at) : null,
+  trialEndsAt: dbCompany.trial_ends_at || null,
+  createdAt: dbCompany.created_at,
   customUrl: dbCompany.custom_url,
   logo: dbCompany.logo,
-  nextPayment: dbCompany.next_payment ? new Date(dbCompany.next_payment) : undefined,
+  nextPayment: dbCompany.next_payment,
   overdueDays: dbCompany.overdue_days,
   whatsappNumber: dbCompany.whatsapp_number
 });
@@ -37,9 +38,7 @@ export const transformServiceFromDB = (dbService: any): Service => ({
   price: Number(dbService.price),
   duration: dbService.duration,
   isActive: dbService.is_active,
-  imageUrl: dbService.image_url,
-  createdAt: dbService.created_at ? new Date(dbService.created_at) : undefined,
-  updatedAt: dbService.updated_at ? new Date(dbService.updated_at) : undefined
+  imageUrl: dbService.image_url
 });
 
 // Professional transformer
@@ -53,9 +52,7 @@ export const transformProfessionalFromDB = (dbProfessional: any): Professional =
   specialties: Array.isArray(dbProfessional.specialties) ? dbProfessional.specialties : [],
   commission: Number(dbProfessional.commission || 0),
   isActive: dbProfessional.is_active,
-  imageUrl: dbProfessional.image_url,
-  createdAt: dbProfessional.created_at ? new Date(dbProfessional.created_at) : undefined,
-  updatedAt: dbProfessional.updated_at ? new Date(dbProfessional.updated_at) : undefined
+  imageUrl: dbProfessional.image_url
 });
 
 // Appointment transformer
@@ -73,8 +70,7 @@ export const transformAppointmentFromDB = (dbAppointment: any): Appointment => (
   price: Number(dbAppointment.price),
   status: dbAppointment.status,
   notes: dbAppointment.notes,
-  createdAt: dbAppointment.created_at ? new Date(dbAppointment.created_at) : undefined,
-  updatedAt: dbAppointment.updated_at ? new Date(dbAppointment.updated_at) : undefined
+  createdAt: dbAppointment.created_at
 });
 
 // Client transformer
@@ -86,9 +82,7 @@ export const transformClientFromDB = (dbClient: any): Client => ({
   email: dbClient.email,
   birthDate: dbClient.birth_date,
   totalAppointments: dbClient.total_appointments || 0,
-  lastAppointment: dbClient.last_appointment,
-  createdAt: dbClient.created_at ? new Date(dbClient.created_at) : undefined,
-  updatedAt: dbClient.updated_at ? new Date(dbClient.updated_at) : undefined
+  lastAppointment: dbClient.last_appointment
 });
 
 // Expense transformer
@@ -99,8 +93,7 @@ export const transformExpenseFromDB = (dbExpense: any): Expense => ({
   amount: Number(dbExpense.amount),
   category: dbExpense.category,
   date: dbExpense.date,
-  createdAt: dbExpense.created_at ? new Date(dbExpense.created_at) : undefined,
-  updatedAt: dbExpense.updated_at ? new Date(dbExpense.updated_at) : undefined
+  createdAt: dbExpense.created_at
 });
 
 // Plan transformer
@@ -112,9 +105,7 @@ export const transformPlanFromDB = (dbPlan: any): Plan => ({
   yearlyPrice: Number(dbPlan.yearly_price),
   features: Array.isArray(dbPlan.features) ? dbPlan.features : [],
   isPopular: dbPlan.is_popular,
-  isActive: dbPlan.is_active,
-  createdAt: dbPlan.created_at ? new Date(dbPlan.created_at) : undefined,
-  updatedAt: dbPlan.updated_at ? new Date(dbPlan.updated_at) : undefined
+  isActive: dbPlan.is_active
 });
 
 // Reverse transformers para enviar dados para o Supabase
@@ -127,10 +118,10 @@ export const transformCompanyToDB = (company: Partial<Company>) => ({
   status: company.status,
   employees: company.employees,
   monthly_revenue: company.monthlyRevenue,
-  trial_ends_at: company.trialEndsAt?.toISOString(),
+  trial_ends_at: company.trialEndsAt,
   custom_url: company.customUrl,
   logo: company.logo,
-  next_payment: company.nextPayment?.toISOString(),
+  next_payment: company.nextPayment,
   overdue_days: company.overdueDays,
   whatsapp_number: company.whatsappNumber
 });

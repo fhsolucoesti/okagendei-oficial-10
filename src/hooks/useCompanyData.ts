@@ -14,7 +14,11 @@ import {
   transformProfessionalFromDB,
   transformAppointmentFromDB,
   transformClientFromDB,
-  transformExpenseFromDB
+  transformExpenseFromDB,
+  transformServiceToDB,
+  transformProfessionalToDB,
+  transformAppointmentToDB,
+  transformExpenseToDB
 } from '@/utils/dataTransformers';
 import type { 
   Company, 
@@ -78,11 +82,15 @@ export const useCompanyData = () => {
   };
 
   // Service operations
-  const addService = async (serviceData: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addService = async (serviceData: Omit<Service, 'id'>) => {
     try {
-      const newService = await servicesApi.create(serviceData);
-      setServices(prev => [...prev, transformServiceFromDB(newService)]);
-      return transformServiceFromDB(newService);
+      const dbService = await servicesApi.create({
+        ...serviceData,
+        companyId: serviceData.companyId
+      });
+      const newService = transformServiceFromDB(dbService);
+      setServices(prev => [...prev, newService]);
+      return newService;
     } catch (err) {
       console.error('Error adding service:', err);
       throw err;
@@ -91,9 +99,10 @@ export const useCompanyData = () => {
 
   const updateService = async (id: string, updates: Partial<Service>) => {
     try {
-      const updatedService = await servicesApi.update(id, updates);
-      setServices(prev => prev.map(s => s.id === id ? transformServiceFromDB(updatedService) : s));
-      return transformServiceFromDB(updatedService);
+      const dbService = await servicesApi.update(id, updates);
+      const updatedService = transformServiceFromDB(dbService);
+      setServices(prev => prev.map(s => s.id === id ? updatedService : s));
+      return updatedService;
     } catch (err) {
       console.error('Error updating service:', err);
       throw err;
@@ -111,9 +120,10 @@ export const useCompanyData = () => {
   };
 
   // Professional operations
-  const addProfessional = async (professionalData: Omit<Professional, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addProfessional = async (professionalData: Omit<Professional, 'id'>) => {
     try {
-      const newProfessional = await professionalsApi.create(professionalData);
+      const dbProfessional = await professionalsApi.create(professionalData);
+      const newProfessional = transformProfessionalFromDB(dbProfessional);
       setProfessionals(prev => [...prev, newProfessional]);
       return newProfessional;
     } catch (err) {
@@ -124,7 +134,8 @@ export const useCompanyData = () => {
 
   const updateProfessional = async (id: string, updates: Partial<Professional>) => {
     try {
-      const updatedProfessional = await professionalsApi.update(id, updates);
+      const dbProfessional = await professionalsApi.update(id, updates);
+      const updatedProfessional = transformProfessionalFromDB(dbProfessional);
       setProfessionals(prev => prev.map(p => p.id === id ? updatedProfessional : p));
       return updatedProfessional;
     } catch (err) {
@@ -144,9 +155,10 @@ export const useCompanyData = () => {
   };
 
   // Appointment operations
-  const addAppointment = async (appointmentData: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addAppointment = async (appointmentData: Omit<Appointment, 'id' | 'createdAt'>) => {
     try {
-      const newAppointment = await appointmentsApi.create(appointmentData);
+      const dbAppointment = await appointmentsApi.create(appointmentData);
+      const newAppointment = transformAppointmentFromDB(dbAppointment);
       setAppointments(prev => [...prev, newAppointment]);
       return newAppointment;
     } catch (err) {
@@ -157,7 +169,8 @@ export const useCompanyData = () => {
 
   const updateAppointment = async (id: string, updates: Partial<Appointment>) => {
     try {
-      const updatedAppointment = await appointmentsApi.update(id, updates);
+      const dbAppointment = await appointmentsApi.update(id, updates);
+      const updatedAppointment = transformAppointmentFromDB(dbAppointment);
       setAppointments(prev => prev.map(a => a.id === id ? updatedAppointment : a));
       return updatedAppointment;
     } catch (err) {
@@ -177,9 +190,10 @@ export const useCompanyData = () => {
   };
 
   // Expense operations
-  const addExpense = async (expenseData: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addExpense = async (expenseData: Omit<Expense, 'id' | 'createdAt'>) => {
     try {
-      const newExpense = await expensesApi.create(expenseData);
+      const dbExpense = await expensesApi.create(expenseData);
+      const newExpense = transformExpenseFromDB(dbExpense);
       setExpenses(prev => [...prev, newExpense]);
       return newExpense;
     } catch (err) {
