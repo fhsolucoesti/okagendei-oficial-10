@@ -20,12 +20,14 @@ import {
   MessageSquare,
   Mail
 } from 'lucide-react';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useData } from '@/contexts/DataContext';
 import { toast } from 'sonner';
 import InvoiceCollection from './InvoiceCollection';
 
 const Notifications = () => {
-  const { notifications, companies, markNotificationAsRead, invoices } = useData();
+  const { company } = useCompanyDataContext();
+  const { notifications, markNotificationAsRead } = useData();
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [viewCompanyDialog, setViewCompanyDialog] = useState(false);
 
@@ -103,37 +105,17 @@ const Notifications = () => {
   };
 
   const handleViewCompany = (companyId?: string) => {
-    if (companyId) {
-      const company = companies.find(c => c.id === companyId);
-      if (company) {
-        setSelectedCompany(company);
-        setViewCompanyDialog(true);
-      }
-    }
+    // Funcionalidade removida temporariamente - será reimplementada
+    toast.info('Funcionalidade será reimplementada em breve');
   };
 
   const handleSendBilling = (companyId?: string) => {
-    if (companyId) {
-      const company = companies.find(c => c.id === companyId);
-      if (company) {
-        toast.success(`Sistema de cobrança aberto para ${company.name}`);
-      }
-    }
+    // Funcionalidade removida temporariamente - será reimplementada  
+    toast.info('Sistema de cobrança será reimplementado em breve');
   };
 
-  // Empresas com faturas em atraso para o componente de cobrança
-  const overdueCompanies = companies.filter(c => {
-    const invoice = invoices.find(i => i.companyId === c.id && i.status === 'overdue');
-    if (invoice) {
-      const daysOverdue = Math.floor((new Date().getTime() - new Date(invoice.dueDate).getTime()) / (1000 * 60 * 60 * 24));
-      return { ...c, overdueDays: daysOverdue };
-    }
-    return false;
-  }).map(c => {
-    const invoice = invoices.find(i => i.companyId === c.id && i.status === 'overdue');
-    const daysOverdue = Math.floor((new Date().getTime() - new Date(invoice!.dueDate).getTime()) / (1000 * 60 * 60 * 24));
-    return { ...c, overdueDays: daysOverdue };
-  });
+  // Funcionalidade de empresas em atraso removida temporariamente
+  const overdueCompanies: any[] = [];
 
   return (
     <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">

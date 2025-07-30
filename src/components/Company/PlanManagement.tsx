@@ -7,6 +7,7 @@ import { TrendingUp, Users, CreditCard, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
+import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import PlansModal from './PlansModal';
 import ConfigurationValidator from './ConfigurationValidator';
@@ -25,6 +26,8 @@ const PlanManagement = ({ isTrialActive, trialEndDate }: PlanManagementProps) =>
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showPlanChangeModal, setShowPlanChangeModal] = useState(false);
+
+  const currentPlan = plans.find(p => p.name.toLowerCase().includes(company?.plan?.toLowerCase() || ''));
 
   const handleUpgrade = () => {
     setShowUpgradeModal(true);

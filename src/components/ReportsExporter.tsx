@@ -7,12 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FileText, Download, Calendar } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const ReportsExporter = () => {
-  const { appointments, expenses, companies, professionals } = useData();
+  const { appointments, expenses, company, professionals } = useCompanyDataContext();
   const { user } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [reportType, setReportType] = useState('financial');
