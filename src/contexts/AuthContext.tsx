@@ -89,6 +89,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 }
               };
               const redirectPath = getRedirectPath(userData.role);
+              console.log('Redirecionando usuário:', { role: userData.role, redirectPath });
               navigate(redirectPath, { replace: true });
             }
           }
