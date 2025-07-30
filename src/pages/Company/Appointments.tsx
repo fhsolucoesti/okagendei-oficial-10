@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Plus, Search, Clock, User, Phone, Edit, Trash2, List } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 import AppointmentCalendar from '@/components/AppointmentCalendar';
@@ -16,7 +16,7 @@ import { Appointment } from '@/types';
 import { toast } from 'sonner';
 
 const Appointments = () => {
-  const { appointments, professionals, services, addAppointment, updateAppointment, deleteAppointment } = useData();
+  const { appointments, professionals, services, addAppointment, updateAppointment, deleteAppointment } = useCompanyDataContext();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);

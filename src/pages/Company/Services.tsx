@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Search } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 import { Service } from '@/types';
@@ -14,7 +14,7 @@ import ServiceForm from '@/components/Services/ServiceForm';
 import ServicesList from '@/components/Services/ServicesList';
 
 const CompanyServices = () => {
-  const { services, addService, updateService, deleteService } = useData();
+  const { services, addService, updateService, deleteService } = useCompanyDataContext();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);

@@ -2,12 +2,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Users, DollarSign, Clock, TrendingUp, AlertCircle } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 
 const CompanyDashboard = () => {
-  const { appointments, professionals, services, clients } = useData();
+  const { appointments, professionals, services, clients } = useCompanyDataContext();
   const { user } = useAuth();
 
   // Filtrar dados da empresa do usuário

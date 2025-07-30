@@ -1,22 +1,20 @@
 
 import { useEffect } from 'react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const CompanyDataSync = () => {
-  const { companies, services, professionals, appointments, initializeCompanyData } = useData();
+  const { company, services, professionals, appointments, loadCompanyData } = useCompanyDataContext();
   const { user } = useAuth();
 
   // Sincronizar dados da empresa quando necessário
   useEffect(() => {
     if (user?.role === 'company_admin' && user.companyId) {
-      const company = companies.find(c => c.id === user.companyId);
-      
       if (!company) {
-        console.log('Empresa não encontrada, inicializando dados...');
-        initializeCompanyData(user.companyId);
-        toast.info('Dados da empresa sendo inicializados...');
+        console.log('Empresa não encontrada, carregando dados...');
+        loadCompanyData(user.companyId);
+        toast.info('Carregando dados da empresa...');
         return;
       }
 
@@ -32,7 +30,7 @@ const CompanyDataSync = () => {
         appointments: companyAppointments.length
       });
     }
-  }, [user, companies, services, professionals, appointments, initializeCompanyData]);
+  }, [user, company, services, professionals, appointments, loadCompanyData]);
 
   return null; // Este componente não renderiza nada
 };

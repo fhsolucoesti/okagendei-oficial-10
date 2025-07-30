@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
+import { CompanyDataProvider } from './contexts/CompanyDataContext';
 import { LandingConfigProvider } from './contexts/LandingConfigContext';
 import AppRoutes from './components/Routes/AppRoutes';
 import './App.css';
@@ -17,12 +18,14 @@ function App() {
       <Router>
         <AuthProvider>
           <DataProvider>
-            <LandingConfigProvider>
-              <div className="App">
-                <AppRoutes />
-                <Toaster position="top-right" richColors />
-              </div>
-            </LandingConfigProvider>
+            <CompanyDataProvider>
+              <LandingConfigProvider>
+                <div className="App">
+                  <AppRoutes />
+                  <Toaster position="top-right" richColors />
+                </div>
+              </LandingConfigProvider>
+            </CompanyDataProvider>
           </DataProvider>
         </AuthProvider>
       </Router>

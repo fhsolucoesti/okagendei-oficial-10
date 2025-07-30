@@ -6,7 +6,8 @@ import type {
   Appointment, 
   Client, 
   Expense,
-  Plan
+  Plan,
+  Notification
 } from '@/types';
 
 // Company transformer
@@ -179,4 +180,25 @@ export const transformPlanToDB = (plan: Partial<Plan>) => ({
   features: plan.features,
   is_popular: plan.isPopular,
   is_active: plan.isActive
+});
+
+// Notification transformer
+export const transformNotificationFromDB = (dbNotification: any): Notification => ({
+  id: dbNotification.id,
+  type: dbNotification.type,
+  title: dbNotification.title,
+  message: dbNotification.message,
+  companyId: dbNotification.company_id,
+  isRead: dbNotification.is_read,
+  priority: dbNotification.priority,
+  createdAt: dbNotification.created_at
+});
+
+export const transformNotificationToDB = (notification: Partial<Notification>) => ({
+  type: notification.type,
+  title: notification.title,
+  message: notification.message,
+  company_id: notification.companyId,
+  is_read: notification.isRead,
+  priority: notification.priority
 });
