@@ -9,11 +9,10 @@ import { Company } from '@/types';
 
 interface CustomUrlFormProps {
   company: Company;
-  companies: Company[];
-  onUpdateUrl: (companyId: string, data: Partial<Company>) => void;
+  onUpdateUrl: (companyId: string, data: Partial<Company>) => Promise<void>;
 }
 
-const CustomUrlForm = ({ company, companies, onUpdateUrl }: CustomUrlFormProps) => {
+const CustomUrlForm = ({ company, onUpdateUrl }: CustomUrlFormProps) => {
   const [customUrl, setCustomUrl] = useState(company?.customUrl || '');
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -34,24 +33,13 @@ const CustomUrlForm = ({ company, companies, onUpdateUrl }: CustomUrlFormProps) 
       return;
     }
 
-    const urlExists = companies.some(c => 
-      c.id !== company?.id && 
-      c.customUrl === sanitizedUrl
-    );
+    // Validação básica removida - será implementada no backend quando necessário
 
-    if (urlExists) {
-      toast.error('Esta URL já está sendo usada por outra empresa');
-      return;
-    }
-
-    setIsUpdating(true);
-    
     try {
-      if (company) {
-        onUpdateUrl(company.id, { customUrl: sanitizedUrl });
-        setCustomUrl(sanitizedUrl);
-        toast.success('URL personalizada atualizada com sucesso!');
-      }
+      setIsUpdating(true);
+      await onUpdateUrl(company.id, { customUrl: sanitizedUrl });
+      setCustomUrl(sanitizedUrl);
+      toast.success('URL personalizada atualizada com sucesso!');
     } catch (error) {
       console.error('Erro ao atualizar URL:', error);
       toast.error('Erro ao atualizar URL personalizada');

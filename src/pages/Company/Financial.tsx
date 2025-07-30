@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DollarSign, Plus, TrendingUp, TrendingDown, Calendar, Receipt, Minus, AlertTriangle } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 import ReportsExporter from '@/components/ReportsExporter';
@@ -16,7 +16,7 @@ import InvoiceCollection from '@/components/InvoiceCollection';
 import { toast } from 'sonner';
 
 const CompanyFinancial = () => {
-  const { appointments, professionals, expenses, addExpense, companies, invoices } = useData();
+  const { appointments, professionals, expenses, addExpense, company } = useCompanyDataContext();
   const { user } = useAuth();
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -46,19 +46,8 @@ const CompanyFinancial = () => {
            expenseDate.getFullYear() === selectedYear;
   });
 
-  // Empresas com faturas em atraso (para demonstração)
-  const overdueCompanies = companies.filter(c => {
-    const invoice = invoices.find(i => i.companyId === c.id && i.status === 'overdue');
-    if (invoice) {
-      const daysOverdue = Math.floor((new Date().getTime() - new Date(invoice.dueDate).getTime()) / (1000 * 60 * 60 * 24));
-      return { ...c, overdueDays: daysOverdue };
-    }
-    return false;
-  }).map(c => {
-    const invoice = invoices.find(i => i.companyId === c.id && i.status === 'overdue');
-    const daysOverdue = Math.floor((new Date().getTime() - new Date(invoice!.dueDate).getTime()) / (1000 * 60 * 60 * 24));
-    return { ...c, overdueDays: daysOverdue };
-  });
+  // Removendo lógica de faturas em atraso que dependia de companies e invoices globais
+  // Esta funcionalidade será reimplementada quando necessário
 
   // Cálculos financeiros
   const totalRevenue = monthlyAppointments.reduce((sum, a) => sum + a.price, 0);
@@ -76,8 +65,7 @@ const CompanyFinancial = () => {
     e.preventDefault();
     addExpense({
       ...expenseData,
-      companyId: user?.companyId || '',
-      createdAt: new Date().toISOString()
+      companyId: user?.companyId || ''
     });
     toast.success('Despesa adicionada com sucesso!');
     setIsExpenseDialogOpen(false);
@@ -127,12 +115,7 @@ const CompanyFinancial = () => {
           <ReportsExporter />
         </div>
 
-        {/* Faturas em Atraso */}
-        {user?.role === 'super_admin' && overdueCompanies.length > 0 && (
-          <div className="mb-6">
-            <InvoiceCollection overdueCompanies={overdueCompanies} />
-          </div>
-        )}
+        {/* Faturas em atraso - funcionalidade removida temporariamente */}
 
         {/* Cards de Resumo */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

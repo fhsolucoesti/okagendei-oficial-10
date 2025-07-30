@@ -14,13 +14,11 @@ interface CompaniesHeaderProps {
 }
 
 const CompaniesHeader = ({ searchTerm, onSearchChange, isDialogOpen, onDialogChange }: CompaniesHeaderProps) => {
-  const { removeDuplicateCompanies } = useData();
+  // Função removeDuplicateCompanies foi removida - funcionalidade será reimplementada quando necessário
 
   const handleRemoveDuplicates = () => {
-    if (confirm('Tem certeza que deseja remover empresas duplicadas? Esta ação não pode ser desfeita.')) {
-      removeDuplicateCompanies();
-      toast.success('Duplicações removidas com sucesso!');
-    }
+    // Funcionalidade temporariamente removida
+    toast.info('Funcionalidade será reimplementada em breve');
   };
 
   return (

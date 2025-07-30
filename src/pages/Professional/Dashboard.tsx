@@ -3,12 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, DollarSign, Clock, User, CheckCircle, AlertCircle } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 
 const ProfessionalDashboard = () => {
-  const { appointments, services, professionals } = useData();
+  const { appointments, services, professionals } = useCompanyDataContext();
   const { user } = useAuth();
 
   // Encontrar o profissional atual

@@ -202,6 +202,17 @@ export const useCompanyData = () => {
     }
   };
 
+  const updateCompany = async (id: string, updates: Partial<Company>) => {
+    try {
+      const dbCompany = await companyApi.update(id, updates);
+      const updatedCompany = transformCompanyFromDB(dbCompany);
+      setCompany(updatedCompany);
+    } catch (err) {
+      console.error('Error updating company:', err);
+      throw err;
+    }
+  };
+
   return {
     // Data
     company,
@@ -224,6 +235,7 @@ export const useCompanyData = () => {
     addAppointment,
     updateAppointment,
     deleteAppointment,
-    addExpense
+    addExpense,
+    updateCompany
   };
 };

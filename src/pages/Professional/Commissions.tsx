@@ -2,12 +2,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, Calendar, User } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 
 const ProfessionalCommissions = () => {
-  const { appointments, services, professionals } = useData();
+  const { appointments, services, professionals } = useCompanyDataContext();
   const { user } = useAuth();
 
   const currentProfessional = professionals.find(p => p.userId === user?.id);

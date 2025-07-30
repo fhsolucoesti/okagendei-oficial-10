@@ -8,14 +8,14 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Settings, User, Clock, Bell, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import Header from '@/components/Layout/Header';
 import { ChangePasswordDialog } from '@/components/Auth/ChangePasswordDialog';
 import { toast } from 'sonner';
 
 const ProfessionalSettings = () => {
   const { user } = useAuth();
-  const { professionals, updateProfessional } = useData();
+  const { professionals, updateProfessional } = useCompanyDataContext();
   
   const currentProfessional = professionals.find(p => p.userId === user?.id);
   

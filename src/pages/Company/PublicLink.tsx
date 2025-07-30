@@ -1,5 +1,5 @@
 
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 import PublicLinkDisplay from '@/components/Company/PublicLinkDisplay';
@@ -11,18 +11,10 @@ import WhatsAppConfig from '@/components/Company/WhatsAppConfig';
 import { useEffect } from 'react';
 
 const CompanyPublicLink = () => {
-  const { companies, updateCompany, initializeCompanyData } = useData();
+  const { company, updateCompany } = useCompanyDataContext();
   const { user } = useAuth();
 
-  const company = companies.find(c => c.id === user?.companyId);
-
-  // Garantir que a empresa existe e tem dados inicializados
-  useEffect(() => {
-    if (user?.companyId && !company) {
-      console.log('Empresa não encontrada, tentando inicializar dados para:', user.companyId);
-      initializeCompanyData(user.companyId);
-    }
-  }, [user?.companyId, company, initializeCompanyData]);
+  // Funcionalidade de inicialização removida - dados são carregados automaticamente pelo CompanyDataContext
 
   // Se não encontrou a empresa, mostrar loading
   if (!company) {
@@ -57,20 +49,19 @@ const CompanyPublicLink = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <CustomUrlForm 
             company={company}
-            companies={companies}
-            onUpdateUrl={updateCompany}
+            onUpdateUrl={(id, updates) => updateCompany(id, updates)}
           />
 
           <CompanyLogoUpload 
             company={company}
-            onUpdateLogo={updateCompany}
+            onUpdateLogo={(id, updates) => updateCompany(id, updates)}
           />
         </div>
 
         <div className="mb-6">
           <WhatsAppConfig 
             company={company}
-            onUpdateWhatsApp={updateCompany}
+            onUpdateWhatsApp={(id, updates) => updateCompany(id, updates)}
           />
         </div>
 

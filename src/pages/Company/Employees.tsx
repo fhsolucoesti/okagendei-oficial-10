@@ -8,14 +8,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Plus, Search, Edit, Trash2, UserCheck, Mail, Phone, Upload, Image } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 import { Professional } from '@/types';
 import { toast } from 'sonner';
 
 const CompanyEmployees = () => {
-  const { professionals, addProfessional, updateProfessional, deleteProfessional } = useData();
+  const { professionals, addProfessional, updateProfessional, deleteProfessional } = useCompanyDataContext();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);

@@ -32,6 +32,7 @@ interface CompanyDataContextType {
   updateAppointment: (id: string, updates: Partial<Appointment>) => Promise<Appointment>;
   deleteAppointment: (id: string) => Promise<void>;
   addExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => Promise<Expense>;
+  updateCompany: (id: string, updates: Partial<Company>) => Promise<void>;
 }
 
 const CompanyDataContext = createContext<CompanyDataContextType | undefined>(undefined);

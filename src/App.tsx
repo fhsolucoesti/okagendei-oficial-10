@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { CompanyDataProvider } from './contexts/CompanyDataContext';
+import { SuperAdminProvider } from './contexts/SuperAdminContext';
 import { LandingConfigProvider } from './contexts/LandingConfigContext';
 import AppRoutes from './components/Routes/AppRoutes';
 import './App.css';
@@ -18,14 +19,16 @@ function App() {
       <Router>
         <AuthProvider>
           <DataProvider>
-            <CompanyDataProvider>
-              <LandingConfigProvider>
-                <div className="App">
-                  <AppRoutes />
-                  <Toaster position="top-right" richColors />
-                </div>
-              </LandingConfigProvider>
-            </CompanyDataProvider>
+            <SuperAdminProvider>
+              <CompanyDataProvider>
+                <LandingConfigProvider>
+                  <div className="App">
+                    <AppRoutes />
+                    <Toaster position="top-right" richColors />
+                  </div>
+                </LandingConfigProvider>
+              </CompanyDataProvider>
+            </SuperAdminProvider>
           </DataProvider>
         </AuthProvider>
       </Router>

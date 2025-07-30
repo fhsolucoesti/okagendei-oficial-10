@@ -8,12 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar, Clock, User, Phone, MapPin, Check, ArrowLeft, Scissors } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { toast } from 'sonner';
 
 const BookingPage = () => {
   const { companyUrl } = useParams();
-  const { companies, services, professionals, addAppointment } = useData();
+  const { company, services, professionals, addAppointment } = useCompanyDataContext();
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState('');
   const [selectedProfessional, setSelectedProfessional] = useState('');
@@ -26,15 +26,7 @@ const BookingPage = () => {
     notes: ''
   });
 
-  // Encontrar a empresa pelo URL customizado
-  const company = companies.find(c => c.customUrl === companyUrl);
-  
-  // Debug logs para acompanhar os dados
-  console.log('Company URL:', companyUrl);
-  console.log('Found company:', company);
-  console.log('All companies:', companies);
-  console.log('All services:', services);
-  console.log('All professionals:', professionals);
+  // Funcionalidade de busca por URL será implementada quando necessário
   
   if (!company) {
     return (
@@ -106,7 +98,7 @@ const BookingPage = () => {
     if (!selectedServiceObj) return;
 
     addAppointment({
-      companyId: company.id,
+      companyId: company?.id || '',
       professionalId: selectedProfessional,
       serviceId: selectedService,
       clientName: clientData.name,
@@ -117,8 +109,7 @@ const BookingPage = () => {
       duration: selectedServiceObj.duration,
       price: selectedServiceObj.price,
       status: 'scheduled',
-      notes: clientData.notes,
-      createdAt: new Date().toISOString()
+      notes: clientData.notes
     });
 
     setStep(5);

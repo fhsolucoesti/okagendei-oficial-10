@@ -12,15 +12,9 @@ interface ProtectedLayoutProps {
 
 export const ProtectedLayout = ({ children, allowedRoles }: ProtectedLayoutProps) => {
   const { user } = useAuth();
-  const { initializeCompanyData } = useData();
+  // Função initializeCompanyData foi removida - dados da empresa são carregados via CompanyDataContext
 
-  // Inicializar dados da empresa quando usuário company_admin fizer login
-  useEffect(() => {
-    if (user && user.role === 'company_admin' && user.companyId) {
-      console.log('Usuário company_admin detectado, inicializando dados da empresa:', user.companyId);
-      initializeCompanyData(user.companyId);
-    }
-  }, [user, initializeCompanyData]);
+  // Funcionalidade de inicialização removida - dados são carregados automaticamente pelo CompanyDataContext
 
   return (
     <RouteGuard allowedRoles={allowedRoles}>

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { useData } from '@/contexts/DataContext';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import Header from '@/components/Layout/Header';
 import CompanyCard from '@/components/SuperAdmin/CompanyCard';
 import CompanyForm from '@/components/SuperAdmin/CompanyForm';
@@ -10,7 +11,8 @@ import { Company } from '@/types';
 import { toast } from 'sonner';
 
 const Companies = () => {
-  const { companies, addCompany, updateCompany, deleteCompany, addNotification } = useData();
+  const { addNotification } = useData();
+  const { companies, addCompany, updateCompany, deleteCompany } = useSuperAdmin();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);

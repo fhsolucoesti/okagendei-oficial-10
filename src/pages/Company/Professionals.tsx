@@ -10,14 +10,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User, Plus, Search, Edit, Trash2, Phone, Mail, Upload } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 import { Professional } from '@/types';
 import { toast } from 'sonner';
 
 const CompanyProfessionals = () => {
-  const { professionals, addProfessional, updateProfessional, deleteProfessional } = useData();
+  const { professionals, addProfessional, updateProfessional, deleteProfessional } = useCompanyDataContext();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);

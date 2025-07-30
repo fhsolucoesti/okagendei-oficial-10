@@ -10,18 +10,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Settings, Building2, Bell, Shield, Upload, User } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
 import { ChangePasswordDialog } from '@/components/Auth/ChangePasswordDialog';
 import { toast } from 'sonner';
 
 const CompanySettings = () => {
-  const { companies, updateCompany } = useData();
+  const { company, updateCompany } = useCompanyDataContext();
   const { user, updateUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
 
-  const company = companies.find(c => c.id === user?.companyId);
+  
 
   const [companyData, setCompanyData] = useState({
     name: company?.name || '',

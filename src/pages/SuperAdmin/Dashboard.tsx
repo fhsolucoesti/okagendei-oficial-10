@@ -2,11 +2,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Users, DollarSign, Calendar, TrendingUp, AlertTriangle } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import Header from '@/components/Layout/Header';
 
 const SuperAdminDashboard = () => {
-  const { companies } = useData();
+  const { companies } = useSuperAdmin();
 
   const totalCompanies = companies.length;
   const activeCompanies = companies.filter(c => c.status === 'active').length;

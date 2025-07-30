@@ -1,4 +1,5 @@
 
+import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Layout/Header';
@@ -10,10 +11,10 @@ import PlanManagement from '@/components/Company/PlanManagement';
 import ExpiredTrialCard from '@/components/Company/ExpiredTrialCard';
 
 const CompanySubscription = () => {
-  const { companies, plans } = useData();
+  const { company } = useCompanyDataContext();
+  const { plans } = useData();
   const { user } = useAuth();
 
-  const company = companies.find(c => c.id === user?.companyId);
   const currentPlan = plans.find(p => p.name.includes(company?.plan || ''));
 
   const trialDaysLeft = company?.trialEndsAt 
