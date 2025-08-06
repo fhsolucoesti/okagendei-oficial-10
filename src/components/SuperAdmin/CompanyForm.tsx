@@ -42,12 +42,12 @@ const CompanyForm = ({
   onCancel
 }: CompanyFormProps) => {
   return (
-    <DialogContent className="max-w-lg">
+    <DialogContent className="max-w-lg" aria-describedby="company-form-description">
       <DialogHeader>
         <DialogTitle>
           {editingCompany ? 'Editar Empresa' : 'Nova Empresa'}
         </DialogTitle>
-        <DialogDescription>
+        <DialogDescription id="company-form-description">
           {editingCompany ? 'Edite os dados da empresa' : 'Cadastre uma nova empresa na plataforma'}
         </DialogDescription>
       </DialogHeader>

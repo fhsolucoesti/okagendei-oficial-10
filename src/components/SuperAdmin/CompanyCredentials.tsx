@@ -80,13 +80,13 @@ const CompanyCredentials = ({
               <div className="flex items-center space-x-2">
                 <input
                   type="radio"
-                  id="email"
+                  id="sendMethod-email"
                   name="sendMethod"
                   value="email"
                   checked={sendMethod === 'email'}
                   onChange={(e) => onSendMethodChange(e.target.value as 'email' | 'whatsapp')}
                 />
-                <Label htmlFor="email" className="flex items-center space-x-1">
+                <Label htmlFor="sendMethod-email" className="flex items-center space-x-1">
                   <Mail className="h-4 w-4" />
                   <span>Email</span>
                 </Label>
@@ -94,13 +94,13 @@ const CompanyCredentials = ({
               <div className="flex items-center space-x-2">
                 <input
                   type="radio"
-                  id="whatsapp"
+                  id="sendMethod-whatsapp"
                   name="sendMethod"
                   value="whatsapp"
                   checked={sendMethod === 'whatsapp'}
                   onChange={(e) => onSendMethodChange(e.target.value as 'email' | 'whatsapp')}
                 />
-                <Label htmlFor="whatsapp" className="flex items-center space-x-1">
+                <Label htmlFor="sendMethod-whatsapp" className="flex items-center space-x-1">
                   <MessageSquare className="h-4 w-4" />
                   <span>WhatsApp</span>
                 </Label>
