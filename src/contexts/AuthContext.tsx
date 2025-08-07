@@ -8,6 +8,7 @@ import { Session } from '@supabase/supabase-js';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  companyId: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUser: (id: string, userData: Partial<User>) => void;
@@ -41,6 +42,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [companyId, setCompanyId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,6 +75,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               mustChangePassword: profile.must_change_password || false
             };
             setUser(userData);
+            setCompanyId(profile.company_id);
 
             // Redirecionar se estiver na página de login
             if (location.pathname === '/login') {
@@ -100,6 +103,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           }
         } else {
           setUser(null);
+          setCompanyId(null);
         }
         setIsLoading(false);
       }
@@ -150,9 +154,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setIsLoading(true);
     
     try {
+      // Step 1: Create user account
       const redirectUrl = `${window.location.origin}/`;
       
-      const { data, error } = await supabase.auth.signUp({
+      const { data: signupData, error: signupError } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
         options: {
@@ -165,13 +170,61 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
       });
 
-      if (error) {
-        console.error('Erro ao criar usuário:', error.message);
+      if (signupError || !signupData.user) {
+        console.error('Erro ao criar usuário:', signupError?.message);
         setIsLoading(false);
         return false;
       }
 
-      // O auth state listener cuidará do resto
+      // Step 2: Create company
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + 7);
+
+      const { data: newCompany, error: companyError } = await supabase
+        .from('companies')
+        .insert({
+          name: userData.companyName,
+          email: userData.email,
+          phone: userData.phone,
+          address: '—',
+          plan: userData.planId,
+          status: 'trial',
+          trial_ends_at: trialEndDate.toISOString()
+        })
+        .select()
+        .single();
+
+      if (companyError || !newCompany) {
+        console.error('Erro ao criar empresa:', companyError?.message);
+        setIsLoading(false);
+        return false;
+      }
+
+      // Step 3: Update user profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          name: userData.ownerName,
+          role: 'company_admin',
+          company_id: newCompany.id
+        })
+        .eq('id', signupData.user.id);
+
+      if (profileError) {
+        console.error('Erro ao atualizar perfil:', profileError.message);
+        setIsLoading(false);
+        return false;
+      }
+
+      // Step 4: Set context
+      setCompanyId(newCompany.id);
+      
+      console.log('✅ Empresa criada com sucesso:', {
+        userId: signupData.user.id,
+        companyId: newCompany.id,
+        companyName: userData.companyName
+      });
+
       setIsLoading(false);
       return true;
     } catch (error) {
@@ -185,6 +238,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    setCompanyId(null);
     navigate('/login');
   };
 
@@ -215,6 +269,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     <AuthContext.Provider value={{
       user,
       session,
+      companyId,
       login,
       logout,
       updateUser,

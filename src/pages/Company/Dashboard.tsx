@@ -1,193 +1,385 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, DollarSign, Clock, TrendingUp, AlertCircle } from 'lucide-react';
-import { useCompanyDataContext } from '@/contexts/CompanyDataContext';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import Header from '@/components/Layout/Header';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Users, Calendar, TrendingUp, Building, UserPlus, Crown } from 'lucide-react';
+import { planLimit, getPlanDisplayName } from '@/lib/planHelpers';
+import { NewProfessionalModal } from '@/components/Company/NewProfessionalModal';
+import { Company, Professional, Appointment } from '@/types';
+import { toast } from 'sonner';
 
 const CompanyDashboard = () => {
-  const { appointments, professionals, services, clients } = useCompanyDataContext();
-  const { user } = useAuth();
+  const { user, companyId, isLoading } = useAuth();
+  const navigate = useNavigate();
+  
+  const [company, setCompany] = useState<Company | null>(null);
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  // Filtrar dados da empresa do usuário
-  const companyAppointments = appointments.filter(a => a.companyId === user?.companyId);
-  const companyProfessionals = professionals.filter(p => p.companyId === user?.companyId);
-  const companyServices = services.filter(s => s.companyId === user?.companyId);
-  const companyClients = clients.filter(c => c.companyId === user?.companyId);
+  // Route guard
+  useEffect(() => {
+    if (!isLoading && user?.role !== 'company_admin') {
+      navigate('/login');
+    }
+  }, [user, isLoading, navigate]);
 
-  // Agendamentos de hoje
-  const today = new Date().toISOString().split('T')[0];
-  const todayAppointments = companyAppointments.filter(a => a.date === today);
+  // Load company data
+  useEffect(() => {
+    if (companyId && user?.role === 'company_admin') {
+      loadCompanyData();
+    }
+  }, [companyId, user]);
 
-  // Faturamento do mês
-  const thisMonth = new Date().getMonth();
-  const thisYear = new Date().getFullYear();
-  const monthlyRevenue = companyAppointments
-    .filter(a => {
-      const appointmentDate = new Date(a.date);
-      return appointmentDate.getMonth() === thisMonth && 
-             appointmentDate.getFullYear() === thisYear &&
-             a.status === 'completed';
-    })
-    .reduce((sum, a) => sum + a.price, 0);
+  const loadCompanyData = async () => {
+    if (!companyId) return;
 
-  // Próximos agendamentos
-  const upcomingAppointments = companyAppointments
-    .filter(a => a.status === 'scheduled')
-    .sort((a, b) => new Date(a.date + ' ' + a.time).getTime() - new Date(b.date + ' ' + b.time).getTime())
-    .slice(0, 5);
+    setDataLoading(true);
+    try {
+      // Load company
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('id', companyId)
+        .single();
+
+      if (companyError) throw companyError;
+      
+      // Map database fields to interface
+      const mappedCompany: Company = {
+        id: companyData.id,
+        name: companyData.name,
+        email: companyData.email,
+        phone: companyData.phone,
+        address: companyData.address,
+        plan: companyData.plan,
+        status: companyData.status,
+        employees: companyData.employees,
+        monthlyRevenue: Number(companyData.monthly_revenue) || 0,
+        trialEndsAt: companyData.trial_ends_at,
+        createdAt: companyData.created_at,
+        customUrl: companyData.custom_url,
+        logo: companyData.logo,
+        nextPayment: companyData.next_payment,
+        overdueDays: companyData.overdue_days,
+        whatsappNumber: companyData.whatsapp_number
+      };
+      
+      setCompany(mappedCompany);
+
+      // Load professionals
+      const { data: professionalsData, error: profError } = await supabase
+        .from('professionals')
+        .select('*')
+        .eq('company_id', companyId);
+
+      if (profError) throw profError;
+      
+      // Map database fields to interface
+      const mappedProfessionals: Professional[] = (professionalsData || []).map(prof => ({
+        id: prof.id,
+        name: prof.name,
+        email: prof.email,
+        phone: prof.phone,
+        specialties: Array.isArray(prof.specialties) ? prof.specialties.map(s => String(s)) : [],
+        commission: Number(prof.commission) || 0,
+        isActive: prof.is_active,
+        imageUrl: prof.image_url,
+        userId: prof.user_id,
+        companyId: prof.company_id
+      }));
+      
+      setProfessionals(mappedProfessionals);
+
+      // Load appointments for today
+      const today = new Date().toISOString().split('T')[0];
+      const { data: appointmentsData, error: appointError } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('date', today);
+
+      if (appointError) throw appointError;
+      
+      // Map database fields to interface
+      const mappedAppointments: Appointment[] = (appointmentsData || []).map(apt => ({
+        id: apt.id,
+        clientName: apt.client_name,
+        clientPhone: apt.client_phone,
+        clientBirthDate: apt.client_birth_date,
+        date: apt.date,
+        time: apt.time,
+        duration: apt.duration,
+        price: Number(apt.price) || 0,
+        status: apt.status,
+        notes: apt.notes,
+        companyId: apt.company_id,
+        professionalId: apt.professional_id,
+        serviceId: apt.service_id,
+        createdAt: apt.created_at
+      }));
+      
+      setAppointments(mappedAppointments);
+
+    } catch (error: any) {
+      console.error('Erro ao carregar dados:', error);
+      toast.error('Erro ao carregar dados da empresa');
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleNewProfessional = () => {
+    const currentCount = professionals.length;
+    const limit = planLimit(company?.plan || 'basico');
+    
+    if (currentCount >= limit) {
+      toast.error(`Limite do plano atingido. Máximo: ${limit} profissionais`);
+      return;
+    }
+    
+    setIsModalOpen(true);
+  };
+
+  if (isLoading || dataLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!company) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">Empresa não encontrada</p>
+        </div>
+      </div>
+    );
+  }
+
+  const professionalsCount = professionals.length;
+  const professionalsLimit = planLimit(company.plan);
+  const todayAppointments = appointments.length;
+  const completedAppointments = appointments.filter(apt => apt.status === 'completed').length;
 
   return (
-    <div className="flex-1 bg-gray-50">
-      <Header title="Dashboard da Empresa" subtitle="Visão geral dos seus agendamentos e performance" />
-      
-      <main className="p-6">
-        {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-100">
-                Agendamentos Hoje
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-blue-200" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{todayAppointments.length}</div>
-              <p className="text-xs text-blue-200">
-                {todayAppointments.filter(a => a.status === 'completed').length} concluídos
-              </p>
-            </CardContent>
-          </Card>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Bem-vindo, {company.name}!
+              </h1>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Crown className="h-3 w-3" />
+                  {getPlanDisplayName(company.plan)}
+                </Badge>
+                <Badge 
+                  variant={company.status === 'trial' ? 'destructive' : 'default'}
+                >
+                  {company.status === 'trial' ? 'Período de Teste' : 'Ativo'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-100">
-                Faturamento Mensal
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-green-200" />
+              <CardTitle className="text-sm font-medium">Profissionais</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                R$ {monthlyRevenue.toLocaleString('pt-BR')}
+                {professionalsCount}/{professionalsLimit}
               </div>
-              <p className="text-xs text-green-200">
-                +15% vs mês anterior
+              <p className="text-xs text-muted-foreground">
+                Limite do plano {getPlanDisplayName(company.plan)}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-100">
-                Profissionais
-              </CardTitle>
-              <Users className="h-4 w-4 text-purple-200" />
+              <CardTitle className="text-sm font-medium">Agendamentos Hoje</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{companyProfessionals.length}</div>
-              <p className="text-xs text-purple-200">
-                {companyProfessionals.filter(p => p.isActive).length} ativos
+              <div className="text-2xl font-bold">{todayAppointments}</div>
+              <p className="text-xs text-muted-foreground">
+                {completedAppointments} concluídos
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-orange-100">
-                Total de Clientes
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-orange-200" />
+              <CardTitle className="text-sm font-medium">Receita Mensal</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{companyClients.length}</div>
-              <p className="text-xs text-orange-200">
-                Clientes cadastrados
+              <div className="text-2xl font-bold">
+                R$ {company.monthlyRevenue?.toFixed(2) || '0.00'}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Este mês
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Status</CardTitle>
+              <Building className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {company.status === 'trial' ? 'Teste' : 'Ativo'}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {company.trialEndsAt && company.status === 'trial' 
+                  ? `Expira em ${new Date(company.trialEndsAt).toLocaleDateString()}`
+                  : 'Status da conta'
+                }
               </p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Próximos Agendamentos */}
+        {/* Action Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Professionals Management */}
           <Card>
             <CardHeader>
-              <CardTitle>Próximos Agendamentos</CardTitle>
-              <CardDescription>Agendamentos confirmados para os próximos dias</CardDescription>
+              <CardTitle className="flex items-center justify-between">
+                <span>Equipe de Profissionais</span>
+                <Button 
+                  onClick={handleNewProfessional}
+                  disabled={professionalsCount >= professionalsLimit}
+                  size="sm"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Novo Profissional
+                </Button>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {upcomingAppointments.length > 0 ? (
-                  upcomingAppointments.map((appointment) => {
-                    const professional = companyProfessionals.find(p => p.id === appointment.professionalId);
-                    const service = companyServices.find(s => s.id === appointment.serviceId);
-                    
-                    return (
-                      <div key={appointment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className="bg-blue-100 text-blue-600 p-2 rounded-lg">
-                            <Clock className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{appointment.clientName}</p>
-                            <p className="text-sm text-gray-500">{service?.name} - {professional?.name}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-gray-900">
-                            {new Date(appointment.date).toLocaleDateString('pt-BR')}
-                          </p>
-                          <p className="text-xs text-gray-500">{appointment.time}</p>
-                        </div>
+              {professionals.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-4">
+                    Nenhum profissional cadastrado ainda
+                  </p>
+                  <Button 
+                    onClick={handleNewProfessional}
+                    variant="outline"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Adicionar Primeiro Profissional
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {professionals.map((prof) => (
+                    <div 
+                      key={prof.id} 
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{prof.name}</p>
+                        <p className="text-sm text-muted-foreground">{prof.email}</p>
                       </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Nenhum agendamento próximo</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Resumo de Serviços */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Serviços Mais Solicitados</CardTitle>
-              <CardDescription>Ranking dos serviços mais populares</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {companyServices.slice(0, 5).map((service, index) => {
-                  const serviceAppointments = companyAppointments.filter(a => a.serviceId === service.id);
-                  
-                  return (
-                    <div key={service.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-2 rounded-lg text-xs font-bold">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{service.name}</p>
-                          <p className="text-sm text-gray-500">R$ {service.price.toFixed(2)}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">
-                          {serviceAppointments.length} agendamentos
-                        </p>
-                        <p className="text-xs text-gray-500">{service.duration} min</p>
-                      </div>
+                      <Badge variant={prof.isActive ? 'default' : 'secondary'}>
+                        {prof.isActive ? 'Ativo' : 'Inativo'}
+                      </Badge>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                  
+                  {professionalsCount < professionalsLimit && (
+                    <Button 
+                      onClick={handleNewProfessional}
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Adicionar Profissional
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Ações Rápidas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate('/empresa/agendamentos')}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Ver Agendamentos
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate('/empresa/servicos')}
+              >
+                <Building className="h-4 w-4 mr-2" />
+                Gerenciar Serviços
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate('/empresa/financeiro')}
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Relatório Financeiro
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate('/empresa/configuracoes')}
+              >
+                <Building className="h-4 w-4 mr-2" />
+                Configurações
+              </Button>
             </CardContent>
           </Card>
         </div>
-      </main>
+      </div>
+
+      {/* New Professional Modal */}
+      <NewProfessionalModal
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        companyId={companyId || ''}
+        currentCount={professionalsCount}
+        planLimit={professionalsLimit}
+        onSuccess={loadCompanyData}
+      />
     </div>
   );
 };
